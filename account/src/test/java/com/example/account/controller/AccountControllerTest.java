@@ -38,11 +38,12 @@ class AccountControllerTest {
 
   @Test
   void createCustomerAccountShouldReturnCreatedAccount() {
+    final Long initialValue = 1234L;
     final Account account = new Account(UUID.randomUUID(), customerId);
 
-    when(accountService.createAccount(customerId)).thenReturn(account);
+    when(accountService.createAccount(customerId, initialValue)).thenReturn(account);
 
-    final ResponseEntity<Account> response = accountController.createCustomerAccount(customerId);
+    final ResponseEntity<Account> response = accountController.createCustomerAccount(customerId, initialValue);
 
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
     assertThat(response.getBody(), is(account));

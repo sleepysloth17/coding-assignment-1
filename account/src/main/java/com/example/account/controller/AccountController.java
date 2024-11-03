@@ -24,8 +24,10 @@ public class AccountController {
 
   @PostMapping(value = "customers/{customerId}/accounts")
   public ResponseEntity<Account> createCustomerAccount(
-      @PathVariable(value = "customerId") UUID customerId) {
-    return ResponseEntity.ok(accountService.createAccount(customerId));
+      @PathVariable(value = "customerId") UUID customerId,
+      @RequestParam(value = "initialValue", required = false, defaultValue = "0") Long initialValue
+      ) {
+    return ResponseEntity.ok(accountService.createAccount(customerId, initialValue));
   }
 
   @GetMapping(value = "customers/{customerId}/accounts")
