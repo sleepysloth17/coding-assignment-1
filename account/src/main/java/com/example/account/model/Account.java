@@ -1,3 +1,8 @@
 package com.example.account.model;
 
-public record Account() {}
+import java.util.UUID;
+
+public record Account(
+        UUID id,
+        UUID customerId
+) {}
