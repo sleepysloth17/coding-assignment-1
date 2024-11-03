@@ -1,11 +1,11 @@
 package com.example.account.service;
 
 import com.example.account.model.Customer;
+import com.example.account.repository.CustomerRepository;
+import com.example.account.validator.StringLengthValidator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.example.account.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,13 +13,19 @@ public class CustomerService {
 
   private final CustomerRepository customerRepository;
 
+  private final StringLengthValidator nameLengthValidator;
+
   public CustomerService(CustomerRepository customerRepository) {
     this.customerRepository = customerRepository;
+    this.nameLengthValidator = new StringLengthValidator(1L, null);
   }
 
   public Customer createCustomer(String name, String surname) {
-    // TODO validate and save customer
-    return customerRepository.save(new Customer(null, name, surname));
+    if (nameLengthValidator.isValid(name) && nameLengthValidator.isValid(surname)) {
+      return customerRepository.save(new Customer(null, name, surname));
+    }
+
+    throw new IllegalStateException("Throwing here until I nicely add exceptions etc");
   }
 
   public Optional<Customer> deleteCustomer(UUID customerId) {
