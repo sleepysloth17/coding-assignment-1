@@ -22,6 +22,12 @@ public class CustomerService {
     return customerRepository.save(null);
   }
 
+  public Optional<Customer> deleteCustomer(UUID customerId) {
+    final Optional<Customer> customer = getCustomer(customerId);
+    customer.ifPresent(customerRepository::delete);
+    return customer;
+  }
+
   public Optional<Customer> getCustomer(UUID customerId) {
     return customerRepository.findById(customerId);
   }

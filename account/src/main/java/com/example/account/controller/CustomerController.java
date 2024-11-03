@@ -25,6 +25,7 @@ public class CustomerController {
     return ResponseEntity.ok(customerService.createCustomer(name, surname));
   }
 
+  @DeleteMapping
   @GetMapping(value = "customers")
   public ResponseEntity<List<Customer>> getCustomers() {
     return ResponseEntity.ok(customerService.getCustomers());
@@ -34,5 +35,11 @@ public class CustomerController {
   public ResponseEntity<Customer> getCustomerWithId(
       @PathVariable(value = "customerId") UUID customerId) {
     return ResponseEntity.of(customerService.getCustomer(customerId));
+  }
+
+  @DeleteMapping(value = "customers/{customerId}")
+  public ResponseEntity<Customer> deleteCustomer(
+      @PathVariable(value = "customerId") UUID customerId) {
+    return ResponseEntity.of(customerService.deleteCustomer(customerId));
   }
 }
