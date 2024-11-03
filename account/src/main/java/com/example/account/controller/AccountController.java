@@ -36,7 +36,7 @@ public class AccountController {
     return ResponseEntity.of(
         customerService
             .getCustomer(customerId)
-            .map(customer -> accountService.getCustomerAccounts(customer.id())));
+            .map(customer -> accountService.getCustomerAccounts(customer.getId())));
   }
 
   @DeleteMapping(value = "accounts/{accountId}")

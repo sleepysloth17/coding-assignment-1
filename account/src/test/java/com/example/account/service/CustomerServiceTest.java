@@ -36,9 +36,9 @@ class CustomerServiceTest {
 
   @Test
   void deleteCustomerShouldDeleteAndReturnDeletedCustomerIfItExists() {
-    when(customerRepository.findById(customer.id())).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
 
-    final Optional<Customer> result = customerService.deleteCustomer(customer.id());
+    final Optional<Customer> result = customerService.deleteCustomer(customer.getId());
 
     assertTrue(result.isPresent());
     assertThat(result.get(), is(customer));
@@ -47,9 +47,9 @@ class CustomerServiceTest {
 
   @Test
   void deleteCustomerShouldReturnAndDeleteNothingIfNoCustomerExists() {
-    when(customerRepository.findById(customer.id())).thenReturn(Optional.empty());
+    when(customerRepository.findById(customer.getId())).thenReturn(Optional.empty());
 
-    final Optional<Customer> result = customerService.deleteCustomer(customer.id());
+    final Optional<Customer> result = customerService.deleteCustomer(customer.getId());
 
     assertTrue(result.isEmpty());
     verify(customerRepository, never()).delete(any());
@@ -57,9 +57,9 @@ class CustomerServiceTest {
 
   @Test
   void getCustomerShouldReturnTheCorrectCustomer() {
-    when(customerRepository.findById(customer.id())).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
 
-    final Optional<Customer> result = customerService.getCustomer(customer.id());
+    final Optional<Customer> result = customerService.getCustomer(customer.getId());
 
     assertTrue(result.isPresent());
     assertThat(result.get(), is(customer));

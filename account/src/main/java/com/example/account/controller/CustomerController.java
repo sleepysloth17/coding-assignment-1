@@ -25,7 +25,6 @@ public class CustomerController {
     return ResponseEntity.ok(customerService.createCustomer(name, surname));
   }
 
-  @DeleteMapping
   @GetMapping(value = "customers")
   public ResponseEntity<List<Customer>> getCustomers() {
     return ResponseEntity.ok(customerService.getCustomers());

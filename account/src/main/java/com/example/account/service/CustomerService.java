@@ -19,7 +19,7 @@ public class CustomerService {
 
   public Customer createCustomer(String name, String surname) {
     // TODO validate and save customer
-    return customerRepository.save(null);
+    return customerRepository.save(new Customer(null, name, surname));
   }
 
   public Optional<Customer> deleteCustomer(UUID customerId) {

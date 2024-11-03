@@ -36,9 +36,9 @@ class AccountServiceTest {
 
   @Test
   void deleteAccountShouldDeleteAndReturnDeletedAccountIfItExists() {
-    when(accountRepository.findById(account.id())).thenReturn(Optional.of(account));
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
-    final Optional<Account> result = accountService.deleteAccount(account.id());
+    final Optional<Account> result = accountService.deleteAccount(account.getId());
 
     assertTrue(result.isPresent());
     assertThat(result.get(), is(account));
@@ -47,9 +47,9 @@ class AccountServiceTest {
 
   @Test
   void deleteAccountShouldReturnAndDeleteNothingIfNoAccountExists() {
-    when(accountRepository.findById(account.id())).thenReturn(Optional.empty());
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.empty());
 
-    final Optional<Account> result = accountService.deleteAccount(account.id());
+    final Optional<Account> result = accountService.deleteAccount(account.getId());
 
     assertTrue(result.isEmpty());
     verify(accountRepository, never()).delete(any());
@@ -57,9 +57,9 @@ class AccountServiceTest {
 
   @Test
   void getAccountShouldReturnTheCorrectAccount() {
-    when(accountRepository.findById(account.id())).thenReturn(Optional.of(account));
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
-    final Optional<Account> result = accountService.getAccount(account.id());
+    final Optional<Account> result = accountService.getAccount(account.getId());
 
     assertTrue(result.isPresent());
     assertThat(result.get(), is(account));
