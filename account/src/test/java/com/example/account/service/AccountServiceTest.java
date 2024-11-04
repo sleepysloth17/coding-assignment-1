@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 
 import com.example.account.model.Account;
 import com.example.account.repository.AccountRepository;
+import com.example.account.validation.ValidationException;
+import com.example.account.validation.ValidationResponse;
 import com.example.account.validation.validator.CustomerExistsValidator;
 import java.util.List;
 import java.util.Optional;
@@ -42,8 +44,23 @@ class AccountServiceTest {
 
   @Test
   void createAccountShouldNotCreateAccountWithNegativeInitialValue() {
-    assertThrows(
-        IllegalStateException.class, () -> accountService.createAccount(UUID.randomUUID(), -10L));
+    final UUID customerId = UUID.randomUUID();
+
+    when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
+
+    assertThrows(ValidationException.class, () -> accountService.createAccount(customerId, -10L));
+
+    verify(accountRepository, never()).save(any());
+  }
+
+  @Test
+  void createAccountShouldNotCreateAccountWithNullInitialValue() {
+    final UUID customerId = UUID.randomUUID();
+
+    when(customerExistsValidator.validate(customerId))
+        .thenReturn(new ValidationResponse(true, null));
+
+    assertThrows(ValidationException.class, () -> accountService.createAccount(customerId, -10L));
 
     verify(accountRepository, never()).save(any());
   }
@@ -52,9 +69,10 @@ class AccountServiceTest {
   void createAccountShouldNotCreateAccountWithNonExistingCustomer() {
     final UUID customerId = UUID.randomUUID();
 
-    when(customerExistsValidator.validate(customerId)).thenReturn(false);
+    when(customerExistsValidator.validate(customerId))
+        .thenReturn(new ValidationResponse(false, ""));
 
-    assertThrows(IllegalStateException.class, () -> accountService.createAccount(customerId, 10L));
+    assertThrows(ValidationException.class, () -> accountService.createAccount(customerId, 10L));
 
     verify(accountRepository, never()).save(any());
   }
@@ -63,7 +81,7 @@ class AccountServiceTest {
   void createAccountShouldCreateAccountWithExistingCustomerAndZeroInitialValue() {
     final UUID customerId = UUID.randomUUID();
 
-    when(customerExistsValidator.validate(customerId)).thenReturn(true);
+    when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
     when(accountRepository.save(any())).then(returnsFirstArg());
 
     final Account created = accountService.createAccount(customerId, 0L);
@@ -74,10 +92,11 @@ class AccountServiceTest {
 
   // TODO
   @Test
-  void createAccountShouldCreateAccountAndInitialTransactionWithExistingCustomerAndNonNegativeInitialValue() {
+  void
+      createAccountShouldCreateAccountAndInitialTransactionWithExistingCustomerAndNonNegativeInitialValue() {
     final UUID customerId = UUID.randomUUID();
 
-    when(customerExistsValidator.validate(customerId)).thenReturn(true);
+    when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
     when(accountRepository.save(any())).then(returnsFirstArg());
 
     final Account created = accountService.createAccount(customerId, 10L);

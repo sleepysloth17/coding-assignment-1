@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.account.model.Customer;
 import com.example.account.repository.CustomerRepository;
+import com.example.account.validation.ValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,11 +44,10 @@ class CustomerServiceTest {
     assertAll(
         () ->
             assertThrows(
-                IllegalStateException.class, () -> customerService.createCustomer("", "surname")),
+                ValidationException.class, () -> customerService.createCustomer("", "surname")),
         () ->
             assertThrows(
-                IllegalStateException.class,
-                () -> customerService.createCustomer(null, "surname")));
+                ValidationException.class, () -> customerService.createCustomer(null, "surname")));
 
     verify(customerRepository, never()).save(any());
   }
@@ -57,10 +57,10 @@ class CustomerServiceTest {
     assertAll(
         () ->
             assertThrows(
-                IllegalStateException.class, () -> customerService.createCustomer("name", "")),
+                ValidationException.class, () -> customerService.createCustomer("name", "")),
         () ->
             assertThrows(
-                IllegalStateException.class, () -> customerService.createCustomer("name", null)));
+                ValidationException.class, () -> customerService.createCustomer("name", null)));
     ;
 
     verify(customerRepository, never()).save(any());

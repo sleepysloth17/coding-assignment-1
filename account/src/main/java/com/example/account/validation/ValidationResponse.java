@@ -14,7 +14,7 @@ public class ValidationResponse {
     this(valid, valid ? Collections.emptyList() : List.of(invalidMessage));
   }
 
-  ValidationResponse(boolean valid, List<String> messages) {
+  private ValidationResponse(boolean valid, List<String> messages) {
     this.valid = valid;
     this.messages = messages;
   }

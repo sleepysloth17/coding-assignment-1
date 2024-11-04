@@ -27,12 +27,9 @@ public class AccountService {
   }
 
   public Account createAccount(UUID customerId, Long initialValue) {
-    final ValidationRunner runner =
-        ValidationRunner.from(customerExistsValidator, customerId)
-            .and(initialValueValidator, initialValue);
-    runner.validate();
-
-    return accountRepository.save(new Account(null, customerId));
+    return ValidationRunner.from(customerExistsValidator, customerId)
+        .and(initialValueValidator, initialValue)
+        .ifValidOrThrow(() -> accountRepository.save(new Account(null, customerId)));
   }
 
   public Optional<Account> deleteAccount(UUID accountId) {

@@ -2,8 +2,8 @@ package com.example.account.service;
 
 import com.example.account.model.Customer;
 import com.example.account.repository.CustomerRepository;
-import com.example.account.validation.validator.StringLengthValidator;
 import com.example.account.validation.ValidationRunner;
+import com.example.account.validation.validator.StringLengthValidator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,15 +18,13 @@ public class CustomerService {
 
   public CustomerService(CustomerRepository customerRepository) {
     this.customerRepository = customerRepository;
-    this.nameLengthValidator = new StringLengthValidator(1L, null);
+    this.nameLengthValidator = new StringLengthValidator(1, null);
   }
 
   public Customer createCustomer(String name, String surname) {
-    final ValidationRunner runner =
-        ValidationRunner.from(nameLengthValidator, name).and(nameLengthValidator, surname);
-    runner.validate();
-
-    return customerRepository.save(new Customer(null, name, surname));
+    return ValidationRunner.from(nameLengthValidator, name)
+        .and(nameLengthValidator, surname)
+        .ifValidOrThrow(() -> customerRepository.save(new Customer(null, name, surname)));
   }
 
   public Optional<Customer> deleteCustomer(UUID customerId) {

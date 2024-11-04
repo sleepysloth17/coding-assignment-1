@@ -4,9 +4,11 @@ import com.example.account.validation.ValidationResponse;
 import com.example.account.validation.Validator;
 
 public class LongValueValidator implements Validator<Long> {
-
-  private static final String INVALID_MESSAGE_TEMPLATE =
+  private static final String INVALID_VALUE_MESSAGE_TEMPLATE =
       "Expected value in range [%d, %d] but got %d";
+
+  private static final String NULL_VALUE_MESSAGE_TEMPLATE =
+      "Expected value in range [%d, %d] but got null value";
 
   private final long min;
 
@@ -19,8 +21,12 @@ public class LongValueValidator implements Validator<Long> {
 
   @Override
   public ValidationResponse validate(Long aLong) {
+    if (aLong == null) {
+      return new ValidationResponse(false, String.format(NULL_VALUE_MESSAGE_TEMPLATE, min, max));
+    }
+
     return new ValidationResponse(
-        aLong != null && aLong >= min && aLong <= max,
-        String.format(INVALID_MESSAGE_TEMPLATE, min, max, aLong));
+        aLong >= min && aLong <= max,
+        String.format(INVALID_VALUE_MESSAGE_TEMPLATE, min, max, aLong));
   }
 }

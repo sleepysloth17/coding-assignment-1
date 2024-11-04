@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomerExistsValidator implements Validator<UUID> {
 
-  private static final String INVALID_MESSAGE_TEMPLATE = "Customer with does not exist with id: %s";
+  private static final String INVALID_MESSAGE_TEMPLATE = "Customer does not exist with id: %s";
 
   private final CustomerRepository customerRepository;
 

@@ -5,19 +5,21 @@ import com.example.account.validation.Validator;
 
 public class StringLengthValidator implements Validator<String> {
 
+  private static final int DEFAULT_MAX = 200;
+
   private static final String INVALID_LENGTH_MESSAGE_TEMPLATE =
-      "Expected string length of range [%d, %d] but has length %d";
+      "Expected string length in range [%d, %d] but has length %d";
 
   private static final String NULL_STRING_MESSAGE_TEMPLATE =
-      "Expected string length of range [%d, %d] but has null length";
+      "Expected string length in range [%d, %d] but string is null";
 
-  private final long minLength;
+  private final int minLength;
 
-  private final long maxLength;
+  private final int maxLength;
 
-  public StringLengthValidator(Long minLength, Long maxLength) {
-    this.minLength = minLength == null ? 0L : minLength;
-    this.maxLength = maxLength == null ? Long.MAX_VALUE : maxLength;
+  public StringLengthValidator(Integer minLength, Integer maxLength) {
+    this.minLength = minLength == null ? 0 : minLength;
+    this.maxLength = maxLength == null ? DEFAULT_MAX : maxLength;
   }
 
   @Override
