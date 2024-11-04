@@ -2,14 +2,19 @@ package com.example.account.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.account.model.Account;
+import com.example.account.model.Customer;
 import com.example.account.repository.AccountRepository;
+import com.example.account.validator.CustomerExistsValidator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,11 +32,59 @@ class AccountServiceTest {
 
   @Mock private AccountRepository accountRepository;
 
+  @Mock private CustomerExistsValidator customerExistsValidator;
+
   private Account account;
 
   @BeforeEach
   void setUp() {
     account = new Account(UUID.randomUUID(), UUID.randomUUID());
+  }
+
+  @Test
+  void createAccountShouldNotCreateAccountWithNegativeInitialValue() {
+    assertThrows(
+        IllegalStateException.class, () -> accountService.createAccount(UUID.randomUUID(), -10L));
+
+    verify(accountRepository, never()).save(any());
+  }
+
+  @Test
+  void createAccountShouldNotCreateAccountWithNonExistingCustomer() {
+    final UUID customerId = UUID.randomUUID();
+
+    when(customerExistsValidator.isValid(customerId)).thenReturn(false);
+
+    assertThrows(IllegalStateException.class, () -> accountService.createAccount(customerId, 10L));
+
+    verify(accountRepository, never()).save(any());
+  }
+
+  @Test
+  void createAccountShouldCreateAccountWithExistingCustomerAndZeroInitialValue() {
+    final UUID customerId = UUID.randomUUID();
+
+    when(customerExistsValidator.isValid(customerId)).thenReturn(true);
+    when(accountRepository.save(any())).then(returnsFirstArg());
+
+    final Account created = accountService.createAccount(customerId, 0L);
+
+    assertNotNull(created);
+    assertThat(created.getCustomerId(), is(customerId));
+  }
+
+  // TODO
+  @Test
+  void createAccountShouldCreateAccountAndInitialTransactionWithExistingCustomerAndNonNegativeInitialValue() {
+    final UUID customerId = UUID.randomUUID();
+
+    when(customerExistsValidator.isValid(customerId)).thenReturn(true);
+    when(accountRepository.save(any())).then(returnsFirstArg());
+
+    final Account created = accountService.createAccount(customerId, 10L);
+
+    assertNotNull(created);
+    assertThat(created.getCustomerId(), is(customerId));
   }
 
   @Test

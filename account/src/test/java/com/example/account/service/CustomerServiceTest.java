@@ -2,7 +2,11 @@ package com.example.account.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -32,6 +36,45 @@ class CustomerServiceTest {
   @BeforeEach
   void setUp() {
     customer = new Customer(UUID.randomUUID(), "name", "surname");
+  }
+
+  @Test
+  void createCustomerShouldNotCreateCustomersWithEmptyFirstName() {
+    assertAll(
+        () ->
+            assertThrows(
+                IllegalStateException.class, () -> customerService.createCustomer("", "surname")),
+        () ->
+            assertThrows(
+                IllegalStateException.class,
+                () -> customerService.createCustomer(null, "surname")));
+
+    verify(customerRepository, never()).save(any());
+  }
+
+  @Test
+  void createCustomerShouldNotCreateCustomersWithEmptySurname() {
+    assertAll(
+        () ->
+            assertThrows(
+                IllegalStateException.class, () -> customerService.createCustomer("name", "")),
+        () ->
+            assertThrows(
+                IllegalStateException.class, () -> customerService.createCustomer("name", null)));
+    ;
+
+    verify(customerRepository, never()).save(any());
+  }
+
+  @Test
+  void createCustomerShouldCreateCustomersWithNonEmptyFirstAndSurnames() {
+    when(customerRepository.save(any())).then(returnsFirstArg());
+
+    final Customer created = customerService.createCustomer("name", "surname");
+
+    assertNotNull(created);
+    assertThat(created.getName(), is("name"));
+    assertThat(created.getSurname(), is("surname"));
   }
 
   @Test

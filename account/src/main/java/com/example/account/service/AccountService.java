@@ -28,6 +28,7 @@ public class AccountService {
   public Account createAccount(UUID customerId, Long initialValue) {
     if (customerExistsValidator.isValid(customerId)
         && initialValueValidator.isValid(initialValue)) {
+      // TODO - handle initial value transaction
       return accountRepository.save(new Account(null, customerId));
     }
 
