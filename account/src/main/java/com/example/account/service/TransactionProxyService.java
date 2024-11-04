@@ -38,11 +38,6 @@ public class TransactionProxyService {
     return restTemplate.postForObject(uri, amount, Transaction.class);
   }
 
-  public Optional<Transaction> getTransaction(UUID transactionId) {
-    final String uri = build("/transactions/", transactionId.toString());
-    return Optional.ofNullable(restTemplate.getForObject(uri, Transaction.class));
-  }
-
   public List<Transaction> getAccountTransactions(UUID accountId) {
     final String uri = build("/accounts/", accountId.toString(), "/transactions");
     final ResponseEntity<List<Transaction>> response =

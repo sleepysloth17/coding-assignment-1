@@ -32,6 +32,7 @@ public class TransactionController {
   public ResponseEntity<Transaction> createTransactionForAccount(
       @PathVariable(value = "accountId") UUID accountId,
       @RequestParam(value = "amount", required = true) long amount) {
+
     return ResponseEntity.ok(transactionService.createTransactionForAccount(accountId, amount));
   }
 
@@ -42,11 +43,5 @@ public class TransactionController {
         accountService
             .getAccount(accountId)
             .map(account -> transactionService.getAccountTransactions(accountId)));
-  }
-
-  @GetMapping("/transactions/{transactionId}")
-  public ResponseEntity<Transaction> getTransaction(
-      @PathVariable(value = "transactionId") UUID transactionId) {
-    return ResponseEntity.of(transactionService.getTransaction(transactionId));
   }
 }

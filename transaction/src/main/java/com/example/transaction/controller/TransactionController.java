@@ -34,10 +34,4 @@ public class TransactionController {
       @PathVariable(value = "accountId") UUID accountId) {
     return ResponseEntity.ok(transactionService.getAccountTransactions(accountId));
   }
-
-  @GetMapping("/transactions/{transactionId}")
-  public ResponseEntity<Transaction> getTransaction(
-      @PathVariable(value = "transactionId") UUID transactionId) {
-    return ResponseEntity.of(transactionService.getTransaction(transactionId));
-  }
 }

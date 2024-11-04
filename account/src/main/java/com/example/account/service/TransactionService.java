@@ -20,10 +20,6 @@ public class TransactionService {
     return transactionProxyService.createTransactionForAccount(accountId, amount);
   }
 
-  public Optional<Transaction> getTransaction(UUID transactionId) {
-    return transactionProxyService.getTransaction(transactionId);
-  }
-
   public List<Transaction> getAccountTransactions(UUID accountId) {
     return transactionProxyService.getAccountTransactions(accountId);
   }
