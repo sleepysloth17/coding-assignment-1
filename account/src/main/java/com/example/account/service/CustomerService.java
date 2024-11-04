@@ -2,7 +2,8 @@ package com.example.account.service;
 
 import com.example.account.model.Customer;
 import com.example.account.repository.CustomerRepository;
-import com.example.account.validator.StringLengthValidator;
+import com.example.account.validation.validator.StringLengthValidator;
+import com.example.account.validation.ValidationRunner;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,11 +22,11 @@ public class CustomerService {
   }
 
   public Customer createCustomer(String name, String surname) {
-    if (nameLengthValidator.isValid(name) && nameLengthValidator.isValid(surname)) {
-      return customerRepository.save(new Customer(null, name, surname));
-    }
+    final ValidationRunner runner =
+        ValidationRunner.from(nameLengthValidator, name).and(nameLengthValidator, surname);
+    runner.validate();
 
-    throw new IllegalStateException("Throwing here until I nicely add exceptions etc");
+    return customerRepository.save(new Customer(null, name, surname));
   }
 
   public Optional<Customer> deleteCustomer(UUID customerId) {

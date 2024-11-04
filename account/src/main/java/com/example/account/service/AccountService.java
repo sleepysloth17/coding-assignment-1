@@ -2,8 +2,9 @@ package com.example.account.service;
 
 import com.example.account.model.Account;
 import com.example.account.repository.AccountRepository;
-import com.example.account.validator.CustomerExistsValidator;
-import com.example.account.validator.LongValueValidator;
+import com.example.account.validation.ValidationRunner;
+import com.example.account.validation.validator.CustomerExistsValidator;
+import com.example.account.validation.validator.LongValueValidator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,14 +27,12 @@ public class AccountService {
   }
 
   public Account createAccount(UUID customerId, Long initialValue) {
-    if (customerExistsValidator.isValid(customerId)
-        && initialValueValidator.isValid(initialValue)) {
-      // TODO - handle initial value transaction
-      return accountRepository.save(new Account(null, customerId));
-    }
+    final ValidationRunner runner =
+        ValidationRunner.from(customerExistsValidator, customerId)
+            .and(initialValueValidator, initialValue);
+    runner.validate();
 
-    throw new IllegalStateException(
-        "I should really throw propert validato rstuff adn handle that init");
+    return accountRepository.save(new Account(null, customerId));
   }
 
   public Optional<Account> deleteAccount(UUID accountId) {

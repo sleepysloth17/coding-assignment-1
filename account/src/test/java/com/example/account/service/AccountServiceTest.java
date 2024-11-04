@@ -12,9 +12,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.account.model.Account;
-import com.example.account.model.Customer;
 import com.example.account.repository.AccountRepository;
-import com.example.account.validator.CustomerExistsValidator;
+import com.example.account.validation.validator.CustomerExistsValidator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,7 +52,7 @@ class AccountServiceTest {
   void createAccountShouldNotCreateAccountWithNonExistingCustomer() {
     final UUID customerId = UUID.randomUUID();
 
-    when(customerExistsValidator.isValid(customerId)).thenReturn(false);
+    when(customerExistsValidator.validate(customerId)).thenReturn(false);
 
     assertThrows(IllegalStateException.class, () -> accountService.createAccount(customerId, 10L));
 
@@ -64,7 +63,7 @@ class AccountServiceTest {
   void createAccountShouldCreateAccountWithExistingCustomerAndZeroInitialValue() {
     final UUID customerId = UUID.randomUUID();
 
-    when(customerExistsValidator.isValid(customerId)).thenReturn(true);
+    when(customerExistsValidator.validate(customerId)).thenReturn(true);
     when(accountRepository.save(any())).then(returnsFirstArg());
 
     final Account created = accountService.createAccount(customerId, 0L);
@@ -78,7 +77,7 @@ class AccountServiceTest {
   void createAccountShouldCreateAccountAndInitialTransactionWithExistingCustomerAndNonNegativeInitialValue() {
     final UUID customerId = UUID.randomUUID();
 
-    when(customerExistsValidator.isValid(customerId)).thenReturn(true);
+    when(customerExistsValidator.validate(customerId)).thenReturn(true);
     when(accountRepository.save(any())).then(returnsFirstArg());
 
     final Account created = accountService.createAccount(customerId, 10L);
