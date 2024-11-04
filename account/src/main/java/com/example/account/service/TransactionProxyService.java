@@ -26,7 +26,11 @@ public class TransactionProxyService {
       TransactionProxyProperties transactionProxyProperties,
       RestTemplateBuilder restTemplateBuilder) {
     this.transactionProxyProperties = transactionProxyProperties;
-    this.restTemplate = restTemplateBuilder.build();
+    this.restTemplate =
+        restTemplateBuilder
+            .basicAuthentication(
+                transactionProxyProperties.getUsername(), transactionProxyProperties.getPassword())
+            .build();
   }
 
   public Transaction createTransactionForAccount(UUID accountId, long amount) {
@@ -34,21 +38,11 @@ public class TransactionProxyService {
     return restTemplate.postForObject(uri, amount, Transaction.class);
   }
 
-  public Optional<Transaction> deleteTransaction(UUID transactionId) {
-    final String uri = build("/transactions/", transactionId.toString());
-    final ResponseEntity<Transaction> response =
-        restTemplate.exchange(uri, HttpMethod.DELETE, null, Transaction.class);
-    return response.getStatusCode().is2xxSuccessful()
-        ? Optional.ofNullable(response.getBody())
-        : Optional.empty();
-  }
-
   public Optional<Transaction> getTransaction(UUID transactionId) {
     final String uri = build("/transactions/", transactionId.toString());
     return Optional.ofNullable(restTemplate.getForObject(uri, Transaction.class));
   }
 
-  // GET /accounts/{accountId}/transactions
   public List<Transaction> getAccountTransactions(UUID accountId) {
     final String uri = build("/accounts/", accountId.toString(), "/transactions");
     final ResponseEntity<List<Transaction>> response =

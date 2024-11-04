@@ -9,8 +9,6 @@ public interface TransactionRepository {
 
   Optional<Transaction> findById(UUID id);
 
-  void delete(Transaction transaction);
-
   Transaction save(Transaction transaction);
 
   List<Transaction> findByAccountId(UUID accountId);

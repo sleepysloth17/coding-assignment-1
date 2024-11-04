@@ -21,12 +21,6 @@ public class TransactionService {
     return transactionRepository.save(new Transaction(null, accountId, amount));
   }
 
-  public Optional<Transaction> deleteTransactionWithId(UUID transactionId) {
-    final Optional<Transaction> transaction = getTransaction(transactionId);
-    transaction.ifPresent(transactionRepository::delete);
-    return transaction;
-  }
-
   public List<Transaction> getAccountTransactions(UUID accountId) {
     return transactionRepository.findByAccountId(accountId);
   }
