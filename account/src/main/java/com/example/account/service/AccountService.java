@@ -44,11 +44,12 @@ public class AccountService {
 
     if (initialValue > 0) {
       try {
+        // handle if this errors please
         final Transaction transaction =
             transactionService.createTransactionForAccount(newAccount.getId(), initialValue);
 
         // failed to create a transaction for some reason, rollback account creation then throw
-        if (transaction != null) {
+        if (transaction == null) {
           deleteAccount(newAccount.getId());
           throw new IllegalStateException("Failed to create account: error during initial transaction creation");
         }
