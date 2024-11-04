@@ -7,11 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.account.model.Account;
+import com.example.account.model.Transaction;
 import com.example.account.repository.AccountRepository;
 import com.example.account.validation.ValidationException;
 import com.example.account.validation.ValidationResponse;
@@ -33,13 +35,15 @@ class AccountServiceTest {
 
   @Mock private AccountRepository accountRepository;
 
+  @Mock private TransactionProxyService transactionProxyService;
+
   @Mock private CustomerExistsValidator customerExistsValidator;
 
   private Account account;
 
   @BeforeEach
   void setUp() {
-    account = new Account(UUID.randomUUID(), UUID.randomUUID());
+    account = new Account(UUID.randomUUID(), UUID.randomUUID(), 0L);
   }
 
   @Test
@@ -92,17 +96,47 @@ class AccountServiceTest {
 
   // TODO
   @Test
-  void
-      createAccountShouldCreateAccountAndInitialTransactionWithExistingCustomerAndNonNegativeInitialValue() {
+  void createAccountShouldCreateAccountAndInitialTransaction() {
     final UUID customerId = UUID.randomUUID();
+    final UUID accountId = UUID.randomUUID();
 
     when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
-    when(accountRepository.save(any())).then(returnsFirstArg());
+    when(accountRepository.save(any()))
+        .then(
+            i -> {
+              final Account account = (Account) i.getArguments()[0];
+              account.setId(accountId);
+              ;
+              return account;
+            });
+    when(transactionProxyService.createTransactionForAccount(accountId, 10L))
+        .thenReturn(new Transaction());
 
     final Account created = accountService.createAccount(customerId, 10L);
 
     assertNotNull(created);
     assertThat(created.getCustomerId(), is(customerId));
+  }
+
+  @Test
+  void createAccountShouldDeleteAccountOnTransactionCreationFailure() {
+    final UUID customerId = UUID.randomUUID();
+
+    final Account account = new Account();
+
+    when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
+    when(accountRepository.save(any())).thenReturn(account);
+    when(transactionProxyService.createTransactionForAccount(any(), anyLong())).thenReturn(null);
+    when(accountRepository.findById(any())).thenReturn(Optional.of(account));
+
+    final Exception exception =
+        assertThrows(
+            IllegalStateException.class, () -> accountService.createAccount(customerId, 10L));
+
+    assertThat(
+        exception.getMessage(),
+        is("Failed to create account: failed to create initial transaction"));
+    verify(accountRepository).delete(any());
   }
 
   @Test
@@ -141,9 +175,9 @@ class AccountServiceTest {
     final UUID customerId = UUID.randomUUID();
     final List<Account> accountList =
         List.of(
-            new Account(UUID.randomUUID(), customerId),
-            new Account(UUID.randomUUID(), customerId),
-            new Account(UUID.randomUUID(), customerId));
+            new Account(UUID.randomUUID(), customerId, 0L),
+            new Account(UUID.randomUUID(), customerId, 0L),
+            new Account(UUID.randomUUID(), customerId, 0L));
 
     when(accountRepository.findByCustomerId(customerId)).thenReturn(accountList);
 

@@ -36,7 +36,7 @@ class AccountExistsValidatorTest {
   @Test
   void shouldReturnValidResponseIfUserAccountWithGivenIdExists() {
     when(accountRepository.findById(accountId))
-        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID())));
+        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID(), 0L)));
 
     final ValidationResponse response = accountExistsValidator.validate(accountId);
 

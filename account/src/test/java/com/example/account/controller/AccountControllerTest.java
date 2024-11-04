@@ -39,11 +39,12 @@ class AccountControllerTest {
   @Test
   void createCustomerAccountShouldReturnCreatedAccount() {
     final Long initialValue = 1234L;
-    final Account account = new Account(UUID.randomUUID(), customerId);
+    final Account account = new Account(UUID.randomUUID(), customerId, 0L);
 
     when(accountService.createAccount(customerId, initialValue)).thenReturn(account);
 
-    final ResponseEntity<Account> response = accountController.createCustomerAccount(customerId, initialValue);
+    final ResponseEntity<Account> response =
+        accountController.createCustomerAccount(customerId, initialValue);
 
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
     assertThat(response.getBody(), is(account));
@@ -53,9 +54,9 @@ class AccountControllerTest {
   void getCustomerAccountsShouldReturnListOfCustomerAccountsIfCustomerExists() {
     final List<Account> accountList =
         List.of(
-            new Account(UUID.randomUUID(), customerId),
-            new Account(UUID.randomUUID(), customerId),
-            new Account(UUID.randomUUID(), customerId));
+            new Account(UUID.randomUUID(), customerId, 0L),
+            new Account(UUID.randomUUID(), customerId, 0L),
+            new Account(UUID.randomUUID(), customerId, 0L));
 
     when(customerService.getCustomer(customerId))
         .thenReturn(Optional.of(new Customer(customerId, "", "")));
@@ -81,7 +82,7 @@ class AccountControllerTest {
   @Test
   void getAccountWithIdShouldReturnTheAccountIfOneExists() {
     final UUID accountId = UUID.randomUUID();
-    final Account account = new Account(accountId, customerId);
+    final Account account = new Account(accountId, customerId, 0L);
 
     when(accountService.getAccount(accountId)).thenReturn(Optional.of(account));
 

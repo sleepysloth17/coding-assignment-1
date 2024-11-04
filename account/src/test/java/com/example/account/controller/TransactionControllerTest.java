@@ -60,7 +60,7 @@ class TransactionControllerTest {
             getTransaction(accountId, 12L));
 
     when(accountService.getAccount(accountId))
-        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID())));
+        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID(), 0L)));
     when(transactionService.getAccountTransactions(accountId)).thenReturn(transactionList);
 
     final ResponseEntity<List<Transaction>> response =

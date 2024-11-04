@@ -3,7 +3,6 @@ package com.example.account.service;
 import com.example.account.model.Account;
 import com.example.account.model.Transaction;
 import com.example.account.repository.AccountRepository;
-import com.example.account.validation.ValidationException;
 import com.example.account.validation.ValidationRunner;
 import com.example.account.validation.validator.CustomerExistsValidator;
 import com.example.account.validation.validator.LongValueValidator;
@@ -17,7 +16,7 @@ public class AccountService {
 
   private final AccountRepository accountRepository;
 
-  private final TransactionService transactionService;
+  private final TransactionProxyService transactionProxyService;
 
   private final CustomerExistsValidator customerExistsValidator;
 
@@ -25,10 +24,10 @@ public class AccountService {
 
   public AccountService(
       AccountRepository accountRepository,
-      TransactionService transactionService,
+      TransactionProxyService transactionProxyService,
       CustomerExistsValidator customerExistsValidator) {
     this.accountRepository = accountRepository;
-    this.transactionService = transactionService;
+    this.transactionProxyService = transactionProxyService;
     this.customerExistsValidator = customerExistsValidator;
     this.initialValueValidator = new LongValueValidator(0L, null);
   }
@@ -40,25 +39,22 @@ public class AccountService {
   }
 
   private Account handleAccountCreation(UUID customerId, long initialValue) {
-    final Account newAccount = accountRepository.save(new Account(null, customerId));
+    final Account newAccount = accountRepository.save(new Account(null, customerId, initialValue));
 
     if (initialValue > 0) {
       try {
-        // handle if this errors please
         final Transaction transaction =
-            transactionService.createTransactionForAccount(newAccount.getId(), initialValue);
+            transactionProxyService.createTransactionForAccount(newAccount.getId(), initialValue);
 
-        // failed to create a transaction for some reason, rollback account creation then throw
+        // throw to rollback account creation
         if (transaction == null) {
-          deleteAccount(newAccount.getId());
-          throw new IllegalStateException("Failed to create account: error during initial transaction creation");
+          throw new IllegalStateException(
+              "Failed to create account: failed to create initial transaction");
         }
-      } catch (ValidationException validationException) {
-        // if we have a validation error, we want to delete the account and then rethrow the
-        // validation error to return
-        // to the user.
+      } catch (Exception e) {
+        // rollback account creation then rethrow the error
         deleteAccount(newAccount.getId());
-        throw validationException;
+        throw e;
       }
     }
 

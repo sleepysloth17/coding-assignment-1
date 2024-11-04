@@ -15,11 +15,14 @@ public class Account {
 
   private UUID customerId;
 
+  private long balance;
+
   public Account() {}
 
-  public Account(UUID id, UUID customerId) {
+  public Account(UUID id, UUID customerId, long balance) {
     this.id = id;
     this.customerId = customerId;
+    this.balance = balance;
   }
 
   public UUID getId() {
@@ -36,5 +39,13 @@ public class Account {
 
   public void setCustomerId(UUID customerId) {
     this.customerId = customerId;
+  }
+
+  public long getBalance() {
+    return balance;
+  }
+
+  public void setBalance(long balance) {
+    this.balance = balance;
   }
 }

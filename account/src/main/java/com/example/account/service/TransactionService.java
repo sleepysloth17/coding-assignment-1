@@ -1,8 +1,11 @@
 package com.example.account.service;
 
 import com.example.account.model.Transaction;
+import com.example.account.repository.AccountRepository;
+import com.example.account.validation.ValidationRunner;
+import com.example.account.validation.validator.AccountExistsValidator;
+import com.example.account.validation.validator.TransactionTotalValidator;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +14,38 @@ public class TransactionService {
 
   private final TransactionProxyService transactionProxyService;
 
-  public TransactionService(TransactionProxyService transactionProxyService) {
+  private final AccountRepository accountRepository;
+
+  private final AccountExistsValidator accountExistsValidator;
+
+  private final TransactionTotalValidator transactionTotalValidator;
+
+  public TransactionService(
+      TransactionProxyService transactionProxyService,
+      AccountRepository accountRepository,
+      AccountExistsValidator accountExistsValidator,
+      TransactionTotalValidator transactionTotalValidator) {
     this.transactionProxyService = transactionProxyService;
+    this.accountRepository = accountRepository;
+    this.accountExistsValidator = accountExistsValidator;
+    this.transactionTotalValidator = transactionTotalValidator;
   }
 
   public Transaction createTransactionForAccount(UUID accountId, long amount) {
-    // TODO - if the amount is less than 0, we want to validate that we have enough in the account
-    return transactionProxyService.createTransactionForAccount(accountId, amount);
+    return ValidationRunner.from(accountExistsValidator, accountId)
+        .and(transactionTotalValidator, amount, accountId)
+        .ifValidOrThrow(
+            () -> {
+              accountRepository
+                  .findById(accountId)
+                  .ifPresent(
+                      account -> {
+                        account.setBalance(account.getBalance() + amount);
+                        accountRepository.save(account);
+                      });
+
+              return transactionProxyService.createTransactionForAccount(accountId, amount);
+            });
   }
 
   public List<Transaction> getAccountTransactions(UUID accountId) {
