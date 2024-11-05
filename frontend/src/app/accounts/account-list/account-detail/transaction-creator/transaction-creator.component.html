@@ -1,0 +1,13 @@
+<h3>Create transaction</h3>
+
+<span class="input-container">
+  <label for="name">Name:</label>
+  <input type="number" id="name" [formControl]="formControl" />
+  <button type="submit" (click)="submit()" [disabled]="!formControl.valid">
+    Submit
+  </button>
+</span>
+
+<span class="error" [class.has-error]="hasRequiredError()"
+  >Amount is required</span
+>
