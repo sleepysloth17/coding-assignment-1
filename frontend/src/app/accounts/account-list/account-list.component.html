@@ -1,0 +1,17 @@
+<div>
+  <table>
+    <tr (click)="expand(account)" *ngFor="let account of accounts">
+      <td class="id">
+        {{ account.id }}
+      </td>
+      <td class="balance">
+        {{ account.balance }}
+      </td>
+      <app-account-detail
+        *ngIf="isExpanded(account)"
+        class="detail"
+        [account]="account"
+      ></app-account-detail>
+    </tr>
+  </table>
+</div>
