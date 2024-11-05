@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  width: 100%;
+  padding: 0;
+}
+
+h2 {
+  margin: 0;
+  margin-bottom: 0.25em;
+  font-size: 1.25em;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+
+  li {
+    button {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      margin-bottom: 0.25em;
+      padding: 0.25em;
+      background-color: lightblue;
+      overflow-wrap: anywhere;
+      border: none;
+
+      &:hover {
+        cursor: pointer;
+        filter: brightness(75%);
+      }
+
+      &.selected {
+        filter: brightness(75%);
+      }
+    }
+  }
+}

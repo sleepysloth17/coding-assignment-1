@@ -1,0 +1,43 @@
+:host {
+  display: block;
+  width: 100%;
+  padding: 0;
+}
+
+h2 {
+  margin: 0;
+  margin-bottom: 0.25em;
+  font-size: 1.25em;
+}
+
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .input-container {
+    display: flex;
+    flex: 1;
+
+    label {
+      display: inline;
+      margin-right: 0.5em;
+      width: 5em;
+    }
+
+    input {
+      flex: 1;
+    }
+  }
+
+  .error {
+    display: block;
+    visibility: hidden;
+    color: red;
+    font-size: 0.75em;
+
+    &.has-error {
+      visibility: visible;
+    }
+  }
+}

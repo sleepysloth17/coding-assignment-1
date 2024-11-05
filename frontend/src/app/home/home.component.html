@@ -1,0 +1,9 @@
+<div class="sidebar">
+  <app-customer-creator
+    (customerCreated)="onCustomerCreation($event)"
+  ></app-customer-creator>
+  <app-customer-list [customers]="customers"></app-customer-list>
+</div>
+<div class="content">
+  <app-accounts></app-accounts>
+</div>
