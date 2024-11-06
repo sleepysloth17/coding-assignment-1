@@ -23,6 +23,7 @@ ENV API_URL=$API_URL
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.tmpl
 COPY ./init_container.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/init_container.sh
 
 EXPOSE 80
 

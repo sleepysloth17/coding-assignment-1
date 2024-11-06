@@ -70,13 +70,9 @@ To start this up in docker, you can use the compose file:
 docker compose up
 ```
 
-<<<<<<< Updated upstream
-This will (after building), serve out on the above ports, but note that by default only the ui and account services are accessibly from the host machine, I have no forwarded the transaction service ports (and in face the acount service ports do not need to be forwarded: I have forwarded them for convenience).
-=======
 This will build and serve the services on the above ports, but note that by default only the ui and account services are accessibly from the host machine, I have no forwarded the transaction service ports (and in face the acount service ports do not need to be forwarded: I have forwarded them for convenience).
 
 Note that the images have been build with defualt configuration and pushed to the repo registry.
->>>>>>> Stashed changes
 
 ## Tests
 
@@ -101,7 +97,7 @@ mvn --batch-mode --update-snapshots -f ./backend/transaction/pom.xml test
 
 The tests are included in the pipeline.
 
-## Assumptions
+## Assumptions & Notes
 
 I have made a couple of assumptions:
 

@@ -1,0 +1,13 @@
+name: Account Service
+on: [push]
+jobs:
+  test-account-service:
+    uses: ./.github/workflows/maven-test.yml
+    with:
+      pom-path: ./backend/account
+  build-account-service:
+    uses: ./.github/workflows/docker-build.yml
+    needs: test-account-service
+    with:
+      dockerfile-context: ./backend/account
+      image-tags: account/service:latest

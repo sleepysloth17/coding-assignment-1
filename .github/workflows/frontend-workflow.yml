@@ -26,4 +26,4 @@ jobs:
     with:
       dockerfile-context: ./frontend
       image-tags: account/frontend:latest
-      build-args: --build-arg API_URL='http://localhost:8081'
+      build-args: --build-arg API_URL=http://localhost:8081
