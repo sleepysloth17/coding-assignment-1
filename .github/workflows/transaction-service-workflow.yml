@@ -1,0 +1,13 @@
+name: Transaction Service
+on: [push]
+jobs:
+  test-transaction-service:
+    uses: ./.github/workflows/maven-test.yml
+    with:
+      pom-path: ./backend/transaction
+  build-transaction-service:
+    uses: ./.github/workflows/docker-build.yml
+    needs: test-transaction-service
+    with:
+      dockerfile-context: ./backend/transaction
+      image-tags: transaction/service:latest

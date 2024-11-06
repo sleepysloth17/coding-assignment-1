@@ -1,7 +1,8 @@
 name: Test frontend
 on: [push]
 jobs:
-  frontend:
+  test-frontend:
+    name: Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source code
@@ -19,3 +20,10 @@ jobs:
       - name: Run tests
         working-directory: ./frontend/
         run: npm run test:ci
+  build-account-service:
+    uses: ./.github/workflows/docker-build.yml
+    needs: test-frontend
+    with:
+      dockerfile-context: ./frontend
+      image-tags: account/frontend:latest
+      build-args: API_URL=http://localhost:8082

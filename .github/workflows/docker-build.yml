@@ -14,7 +14,8 @@ on:
         required: false
         type: string
 jobs:
-  account-service:
+  build-and-push:
+    name: Build and push image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source code
