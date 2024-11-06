@@ -9,6 +9,7 @@ import com.example.account.model.Account;
 import com.example.account.model.Transaction;
 import com.example.account.service.AccountService;
 import com.example.account.service.TransactionService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,8 +60,7 @@ class TransactionControllerTest {
             getTransaction(accountId, 11L),
             getTransaction(accountId, 12L));
 
-    when(accountService.getAccount(accountId))
-        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID(), 0L)));
+    when(accountService.getAccount(accountId)).thenReturn(Optional.of(getAccount()));
     when(transactionService.getAccountTransactions(accountId)).thenReturn(transactionList);
 
     final ResponseEntity<List<Transaction>> response =
@@ -82,11 +82,15 @@ class TransactionControllerTest {
     assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
   }
 
+  private Account getAccount() {
+    final Account account = new Account();
+    account.setId(accountId);
+    account.setCustomerId(UUID.randomUUID());
+    account.setBalance(0L);
+    return account;
+  }
+
   private Transaction getTransaction(UUID accountId, long amount) {
-    final Transaction transaction = new Transaction();
-    transaction.setId(UUID.randomUUID());
-    transaction.setAccountId(accountId);
-    transaction.setAmount(amount);
-    return transaction;
+    return new Transaction(UUID.randomUUID(), Instant.now(), accountId, amount);
   }
 }

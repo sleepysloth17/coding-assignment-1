@@ -39,7 +39,7 @@ class AccountControllerTest {
   @Test
   void createCustomerAccountShouldReturnCreatedAccount() {
     final Long initialValue = 1234L;
-    final Account account = new Account(UUID.randomUUID(), customerId, 0L);
+    final Account account = getAccount(UUID.randomUUID());
 
     when(accountService.createAccount(customerId, initialValue)).thenReturn(account);
 
@@ -54,12 +54,13 @@ class AccountControllerTest {
   void getCustomerAccountsShouldReturnListOfCustomerAccountsIfCustomerExists() {
     final List<Account> accountList =
         List.of(
-            new Account(UUID.randomUUID(), customerId, 0L),
-            new Account(UUID.randomUUID(), customerId, 0L),
-            new Account(UUID.randomUUID(), customerId, 0L));
+            getAccount(UUID.randomUUID()),
+            getAccount(UUID.randomUUID()),
+            getAccount(UUID.randomUUID()));
+    final Customer customer = new Customer();
+    customer.setId(customerId);
 
-    when(customerService.getCustomer(customerId))
-        .thenReturn(Optional.of(new Customer(customerId, "", "")));
+    when(customerService.getCustomer(customerId)).thenReturn(Optional.of(customer));
     when(accountService.getCustomerAccounts(customerId)).thenReturn(accountList);
 
     final ResponseEntity<List<Account>> response =
@@ -82,7 +83,7 @@ class AccountControllerTest {
   @Test
   void getAccountWithIdShouldReturnTheAccountIfOneExists() {
     final UUID accountId = UUID.randomUUID();
-    final Account account = new Account(accountId, customerId, 0L);
+    final Account account = getAccount(accountId);
 
     when(accountService.getAccount(accountId)).thenReturn(Optional.of(account));
 
@@ -101,5 +102,13 @@ class AccountControllerTest {
     final ResponseEntity<Account> response = accountController.getAccountWithId(accountId);
 
     assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+  }
+
+  private Account getAccount(UUID accountId) {
+    final Account account = new Account();
+    account.setId(accountId);
+    account.setCustomerId(customerId);
+    account.setBalance(0L);
+    return account;
   }
 }

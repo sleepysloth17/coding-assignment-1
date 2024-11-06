@@ -36,7 +36,7 @@ class CustomerServiceTest {
 
   @BeforeEach
   void setUp() {
-    customer = new Customer(UUID.randomUUID(), "name", "surname");
+    customer = getCustomer("name", "surname");
   }
 
   @Test
@@ -111,15 +111,20 @@ class CustomerServiceTest {
   @Test
   void getCustomersShouldReturnTheListOfMatchingCustomers() {
     final List<Customer> customerList =
-        List.of(
-            new Customer(UUID.randomUUID(), "", ""),
-            new Customer(UUID.randomUUID(), "", ""),
-            new Customer(UUID.randomUUID(), "", ""));
+        List.of(getCustomer("", ""), getCustomer("", ""), getCustomer("", ""));
 
     when(customerRepository.findAll()).thenReturn(customerList);
 
     final List<Customer> result = customerService.getCustomers();
 
     assertThat(result, is(customerList));
+  }
+
+  private Customer getCustomer(String name, String surname) {
+    final Customer c = new Customer();
+    c.setId(UUID.randomUUID());
+    c.setName(name);
+    c.setSurname(surname);
+    return c;
   }
 }

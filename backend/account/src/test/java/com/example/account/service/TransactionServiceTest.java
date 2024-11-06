@@ -16,6 +16,7 @@ import com.example.account.validation.ValidationException;
 import com.example.account.validation.ValidationResponse;
 import com.example.account.validation.validator.AccountExistsValidator;
 import com.example.account.validation.validator.TransactionTotalValidator;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -75,7 +76,8 @@ class TransactionServiceTest {
   @Test
   void createTransactionShouldUpdateAccountAndCreateTransactionIfIsValidRequest() {
     final Transaction transaction = getTransaction();
-    final Account account = new Account(accountId, UUID.randomUUID(), 0L);
+    final Account account = new Account();
+    account.setId(accountId);
 
     when(accountExistsValidator.validate(accountId)).thenReturn(new ValidationResponse(true, ""));
     when(transactionTotalValidator.validate(10L, accountId))
@@ -105,9 +107,6 @@ class TransactionServiceTest {
   }
 
   private Transaction getTransaction() {
-    final Transaction transaction = new Transaction();
-    transaction.setId(UUID.randomUUID());
-    transaction.setAccountId(accountId);
-    return transaction;
+    return new Transaction(UUID.randomUUID(), Instant.now(), accountId, 0L);
   }
 }

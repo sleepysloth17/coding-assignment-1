@@ -26,19 +26,19 @@ class CustomerExistsValidatorTest {
 
   @Mock private CustomerRepository customerRepository;
 
-  private UUID customerId;
+  private Customer customer;
 
   @BeforeEach
   void setUp() {
-    customerId = UUID.randomUUID();
+    customer = new Customer();
+    customer.setId(UUID.randomUUID());
   }
 
   @Test
   void shouldReturnValidResponseIfUserAccountWithGivenIdExists() {
-    when(customerRepository.findById(customerId))
-        .thenReturn(Optional.of(new Customer(customerId, "name", "surname")));
+    when(customerRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
 
-    final ValidationResponse response = customerExistsValidator.validate(customerId);
+    final ValidationResponse response = customerExistsValidator.validate(customer.getId());
 
     assertTrue(response.isValid());
     assertThat(response.getMessages(), is(Collections.emptyList()));
@@ -46,13 +46,13 @@ class CustomerExistsValidatorTest {
 
   @Test
   void shouldReturnInvalidResponseIfNoUserAccountWithGivenIdExists() {
-    when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+    when(customerRepository.findById(customer.getId())).thenReturn(Optional.empty());
 
-    final ValidationResponse response = customerExistsValidator.validate(customerId);
+    final ValidationResponse response = customerExistsValidator.validate(customer.getId());
 
     assertFalse(response.isValid());
     assertThat(
         response.getMessages(),
-        is(Collections.singletonList("Customer does not exist with id: " + customerId)));
+        is(Collections.singletonList("Customer does not exist with id: " + customer.getId())));
   }
 }
