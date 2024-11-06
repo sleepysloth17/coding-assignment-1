@@ -1,0 +1,21 @@
+name: Test frontend
+on: [push]
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v4
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        working-directory: ./frontend/
+        run: npm ci
+      - name: Run linter
+        working-directory: ./frontend/
+        run: npm run lint
+      - name: Run tests
+        working-directory: ./frontend/
+        run: npm run test:ci

@@ -95,7 +95,7 @@ mvn --batch-mode --update-snapshots -f ./backend/transaction/pom.xml test
 
 The tests are included in the pipeline.
 
-## Assumptions
+## Assumptions & Notes
 
 I have made a couple of assumptions:
 

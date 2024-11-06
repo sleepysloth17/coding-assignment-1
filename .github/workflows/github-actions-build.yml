@@ -1,0 +1,32 @@
+on:
+  workflow_call:
+    inputs:
+      dockerfile-context:
+        description: "Path to dir containing Dockerfile to build"
+        required: true
+        type: string
+      image-tags:
+        description: "Docker image tags"
+        required: true
+        type: string
+      build-args:
+        description: "Docker build args"
+        required: false
+        type: string
+jobs:
+  account-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.dockerfile-context }}
+          push: false # I don't have a registry to push to, hence the above
+          tags: ${{ inputs.image-tags }}
+          build-args: ${{ inputs.build-args }}

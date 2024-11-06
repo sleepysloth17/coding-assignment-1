@@ -1,0 +1,7 @@
+name: Test Transaction Servicce
+on: [push]
+jobs:
+  test-transaction-service:
+    uses: ./.github/workflows/test-maven-service.yml
+    with:
+      pom-path: ./backend/transaction
