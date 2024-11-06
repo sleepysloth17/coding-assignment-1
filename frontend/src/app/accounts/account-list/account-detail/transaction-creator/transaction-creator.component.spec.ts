@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { TestingModule } from '../../../../../testing.module.spec';
 import { TransactionCreatorComponent } from './transaction-creator.component';
 
 describe('TransactionCreatorComponent', () => {
@@ -8,9 +9,8 @@ describe('TransactionCreatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TransactionCreatorComponent]
-    })
-    .compileComponents();
+      imports: [TransactionCreatorComponent, TestingModule],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TransactionCreatorComponent);
     component = fixture.componentInstance;
