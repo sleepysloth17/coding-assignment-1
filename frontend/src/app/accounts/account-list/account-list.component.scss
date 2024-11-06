@@ -20,12 +20,17 @@ div {
         &.balance {
           align-items: center;
         }
+
+        .label {
+          font-weight: bold;
+          margin-right: 1em;
+        }
       }
 
       border-bottom: 1px solid darkgray;
 
       display: grid;
-      grid-template-columns: 1fr 6em 6em 2em;
+      grid-template-columns: 25em 1fr;
 
       .detail {
         grid-column: 1/-1;
