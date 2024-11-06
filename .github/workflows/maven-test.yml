@@ -1,0 +1,23 @@
+name: Maven test and build
+on:
+  workflow_call:
+    inputs:
+      pom-path:
+        description: "Path to the pom of the project to test"
+        required: true
+        type: string
+jobs:
+  reusable_maven_test_job:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+      - name: Running tests
+        working-directory: ${{ inputs.pom-path }}
+        run: mvn --batch-mode --update-snapshots test

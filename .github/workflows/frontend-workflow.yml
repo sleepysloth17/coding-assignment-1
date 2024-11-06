@@ -1,0 +1,29 @@
+name: Frontend
+on: [push]
+jobs:
+  test-frontend:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v4
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        working-directory: ./frontend/
+        run: npm ci
+      - name: Run linter
+        working-directory: ./frontend/
+        run: npm run lint
+      - name: Run tests
+        working-directory: ./frontend/
+        run: npm run test:ci
+  build-frontend:
+    uses: ./.github/workflows/docker-build.yml
+    needs: test-frontend
+    with:
+      dockerfile-context: ./frontend
+      image-tags: account/frontend:latest
+      build-args: --build-arg API_URL=http://localhost:8081
