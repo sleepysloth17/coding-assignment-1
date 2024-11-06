@@ -1,4 +1,4 @@
-name: Test frontend
+name: Frontend
 on: [push]
 jobs:
   test-frontend:
@@ -20,10 +20,10 @@ jobs:
       - name: Run tests
         working-directory: ./frontend/
         run: npm run test:ci
-  build-account-service:
+  build-frontend:
     uses: ./.github/workflows/docker-build.yml
     needs: test-frontend
     with:
       dockerfile-context: ./frontend
       image-tags: account/frontend:latest
-      build-args: API_URL=http://localhost:8082
+      build-args: --build-arg API_URL=http://localhost:8081

@@ -70,7 +70,9 @@ To start this up in docker, you can use the compose file:
 docker compose up
 ```
 
-This will (after building), serve out on the above ports, but note that by default only the ui and account services are accessibly from the host machine, I have no forwarded the transaction service ports (and in face the acount service ports do not need to be forwarded: I have forwarded them for convenience).
+This will build and serve the services on the above ports, but note that by default only the ui and account services are accessibly from the host machine, I have no forwarded the transaction service ports (and in face the acount service ports do not need to be forwarded: I have forwarded them for convenience).
+
+Note that the pipelines build and push docker images to the package registry in the repo if you want to pull those.
 
 ## Tests
 
