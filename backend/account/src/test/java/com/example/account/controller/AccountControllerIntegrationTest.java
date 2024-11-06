@@ -19,7 +19,7 @@ import com.example.account.service.AccountService;
 import com.example.account.service.CustomerService;
 import com.example.account.service.TransactionProxyService;
 import com.jayway.jsonpath.JsonPath;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,8 +36,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 class AccountControllerIntegrationTest {
-
-  @Autowired private AccountController accountController;
 
   @Autowired private CustomerService customerService;
 
@@ -88,9 +86,10 @@ class AccountControllerIntegrationTest {
     final String createdAccountId =
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
-    final List<Account> accounts = accountService.getCustomerAccounts(customer.getId());
-    assertThat(accounts.size(), is(1));
-    assertThat(accounts.get(0).getId().toString(), is(createdAccountId));
+    final Optional<Account> account = accountService.getAccount(UUID.fromString(createdAccountId));
+    assertTrue(account.isPresent());
+    assertThat(account.get().getCustomerId(), is(customer.getId()));
+    assertThat(account.get().getBalance(), is(0L));
   }
 
   @Test
@@ -112,9 +111,10 @@ class AccountControllerIntegrationTest {
     final String createdAccountId =
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
-    final List<Account> accounts = accountService.getCustomerAccounts(customer.getId());
-    assertThat(accounts.size(), is(1));
-    assertThat(accounts.get(0).getId().toString(), is(createdAccountId));
+    final Optional<Account> account = accountService.getAccount(UUID.fromString(createdAccountId));
+    assertTrue(account.isPresent());
+    assertThat(account.get().getCustomerId(), is(customer.getId()));
+    assertThat(account.get().getBalance(), is(15L));
   }
 
   @Test
@@ -162,10 +162,9 @@ class AccountControllerIntegrationTest {
         .andExpect(jsonPath("$.id").value(account.getId().toString()))
         .andExpect(jsonPath("$.customerId").value(customer.getId().toString()))
         .andExpect(jsonPath("$.balance").value("10"));
-    ;
 
-    final List<Account> accounts = accountService.getCustomerAccounts(customer.getId());
-    assertTrue(accounts.isEmpty());
+    final Optional<Account> optional = accountService.getAccount(account.getId());
+    assertTrue(optional.isEmpty());
   }
 
   @Test
