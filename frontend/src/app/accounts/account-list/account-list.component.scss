@@ -1,0 +1,41 @@
+div {
+  max-height: 100%;
+  width: 100%;
+  overflow-y: auto;
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 2em;
+
+    tr {
+      td {
+        display: flex;
+        align-items: flex-end;
+
+        &.id {
+          align-items: center;
+        }
+
+        &.balance {
+          align-items: center;
+        }
+
+        .label {
+          font-weight: bold;
+          margin-right: 1em;
+        }
+      }
+
+      border-bottom: 1px solid darkgray;
+
+      display: grid;
+      grid-template-columns: 25em 1fr;
+
+      .detail {
+        grid-column: 1/-1;
+        padding: 1em;
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+:host {
+  width: 100%;
+}
+
+span {
+  display: grid;
+  grid-template-columns: min-content 1fr min-content 0.5fr;
+
+  .label {
+    margin: 0 1em;
+    font-weight: bold;
+  }
+}

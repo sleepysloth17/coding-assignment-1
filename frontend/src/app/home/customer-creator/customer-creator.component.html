@@ -1,0 +1,21 @@
+<h2>Create customer</h2>
+
+<form [formGroup]="form">
+  <span class="input-container">
+    <label for="name">Name:</label>
+    <input type="text" id="name" formControlName="name" />
+  </span>
+  <span class="error" [class.has-error]="hasRequiredError('name')"
+    >Name is required</span
+  >
+  <span class="input-container">
+    <label for="surname">Surname:</label>
+    <input type="text" id="surname" formControlName="surname" />
+  </span>
+  <span class="error" [class.has-error]="hasRequiredError('surname')"
+    >Surname is required</span
+  >
+  <button type="submit" (click)="submit()" [disabled]="!form.valid">
+    Create Customer
+  </button>
+</form>
