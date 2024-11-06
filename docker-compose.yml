@@ -7,6 +7,8 @@ services:
       context: ./backend/account/
     depends_on: 
       - transaction-service
+    ports:
+      - 8081:8081
     environment:
       - TRANSACTION_SERVICE_URL=http://transaction-service:8082/api
   frontend:
