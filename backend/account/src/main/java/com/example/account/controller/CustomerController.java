@@ -1,5 +1,7 @@
 package com.example.account.controller;
 
+import com.example.account.dto.Assembler;
+import com.example.account.dto.CustomerDto;
 import com.example.account.model.Customer;
 import com.example.account.service.CustomerService;
 import java.util.List;
@@ -14,8 +16,12 @@ public class CustomerController {
 
   private final CustomerService customerService;
 
-  public CustomerController(CustomerService customerService) {
+  private final Assembler customerAssembler;
+
+  public CustomerController(
+      CustomerService customerService, Assembler assembler) {
     this.customerService = customerService;
+    this.customerAssembler = assembler;
   }
 
   @PostMapping(value = "customers")
@@ -34,6 +40,12 @@ public class CustomerController {
   public ResponseEntity<Customer> getCustomerWithId(
       @PathVariable(value = "customerId") UUID customerId) {
     return ResponseEntity.of(customerService.getCustomer(customerId));
+  }
+
+  @GetMapping(value = "customers/{customerId}/information")
+  public ResponseEntity<CustomerDto> getCustomerInformationWithId(
+      @PathVariable(value = "customerId") UUID customerId) {
+    return ResponseEntity.of(customerAssembler.getCustomerDto(customerId));
   }
 
   @DeleteMapping(value = "customers/{customerId}")
