@@ -1,1 +1,13 @@
-<p>account-creator works!</p>
+<h3>Create account</h3>
+
+<span class="input-container">
+  <label for="initial">Initial Value:</label>
+  <input type="number" id="initial" [formControl]="formControl" />
+  <button type="submit" (click)="submit()" [disabled]="!formControl.valid">
+    Create Account
+  </button>
+</span>
+
+<span class="error" [class.has-error]="hasError()">
+  {{ getErrorMessage() }}
+</span>

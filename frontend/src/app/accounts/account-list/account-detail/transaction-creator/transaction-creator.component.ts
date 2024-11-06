@@ -38,13 +38,14 @@ export class TransactionCreatorComponent {
   public submit(): void {
     if (
       this.accountId &&
-      (this.formControl.value || this.formControl.value === 0)
+      this.formControl.valid &&
+      this.formControl.value !== null
     ) {
       this._transactionService
         .createTransaction(this.accountId, this.formControl.value)
         .then((createdTransaction: Transaction) => {
           this.transactionCreated.emit(createdTransaction);
-          this.formControl.reset();
+          this.formControl.reset(0);
         });
     }
   }

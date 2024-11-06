@@ -1,2 +1,6 @@
-<app-account-creator></app-account-creator>
+<app-account-creator
+  *ngIf="!!customerId"
+  [customerId]="customerId"
+  (accountCreated)="onAccountCreation($event)"
+></app-account-creator>
 <app-account-list [accounts]="accounts"></app-account-list>

@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   Input,
@@ -13,7 +14,7 @@ import { AccountService } from './account.service';
 @Component({
   selector: 'app-accounts',
   standalone: true,
-  imports: [AccountCreatorComponent, AccountListComponent],
+  imports: [CommonModule, AccountCreatorComponent, AccountListComponent],
   templateUrl: './accounts.component.html',
   styleUrl: './accounts.component.scss',
 })
@@ -29,10 +30,14 @@ export class AccountsComponent implements OnInit, OnChanges {
   }
 
   public ngOnChanges(changes: SimpleChanges) {
-    console.log('hello');
     if (changes['customerId'].previousValue !== this.customerId) {
       this._updateAccounts();
     }
+  }
+
+  public onAccountCreation(createdAccount: Account) {
+    console.log('hello');
+    this.accounts.push(createdAccount);
   }
 
   private _updateAccounts(): void {
