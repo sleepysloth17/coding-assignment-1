@@ -6,6 +6,7 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { take } from 'rxjs';
 import { Account } from './account';
 import { AccountCreatorComponent } from './account-creator/account-creator.component';
 import { AccountListComponent } from './account-list/account-list.component';
@@ -36,7 +37,6 @@ export class AccountsComponent implements OnInit, OnChanges {
   }
 
   public onAccountCreation(createdAccount: Account) {
-    console.log('hello');
     this.accounts.push(createdAccount);
   }
 
@@ -44,7 +44,8 @@ export class AccountsComponent implements OnInit, OnChanges {
     if (this.customerId) {
       this._accountService
         .getAccounts(this.customerId)
-        .then((accounts: Account[]) => (this.accounts = accounts));
+        .pipe(take(1))
+        .subscribe((accounts: Account[]) => (this.accounts = accounts));
     }
   }
 }

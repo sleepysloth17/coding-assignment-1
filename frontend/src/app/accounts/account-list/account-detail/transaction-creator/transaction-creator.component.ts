@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { take } from 'rxjs';
 import { Transaction } from '../transaction';
 import { TransactionService } from '../transaction.service';
 
@@ -43,9 +44,12 @@ export class TransactionCreatorComponent {
     ) {
       this._transactionService
         .createTransaction(this.accountId, this.formControl.value)
-        .then((createdTransaction: Transaction) => {
-          this.transactionCreated.emit(createdTransaction);
-          this.formControl.reset(0);
+        .pipe(take(1))
+        .subscribe((createdTransaction: Transaction | null) => {
+          if (createdTransaction) {
+            this.transactionCreated.emit(createdTransaction);
+            this.formControl.reset(0);
+          }
         });
     }
   }

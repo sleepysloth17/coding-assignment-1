@@ -8,6 +8,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { take } from 'rxjs';
 import { Customer } from '../customer';
 import { CustomerService } from '../customer.service';
 
@@ -51,9 +52,12 @@ export class CustomerCreatorComponent {
         this.form.get('name')?.value || '',
         this.form.get('surname')?.value || '',
       )
-      .then((createdCustomer: Customer) => {
-        this.customerCreated.emit(createdCustomer);
-        this.form.reset();
+      .pipe(take(1))
+      .subscribe((createdCustomer: Customer | null) => {
+        if (createdCustomer) {
+          this.customerCreated.emit(createdCustomer);
+          this.form.reset();
+        }
       });
   }
 }

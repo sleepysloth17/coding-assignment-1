@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
+import { take } from 'rxjs';
 import { Account } from '../../account';
 import { Transaction } from './transaction';
 import { TransactionCreatorComponent } from './transaction-creator/transaction-creator.component';
@@ -24,7 +25,8 @@ export class AccountDetailComponent implements OnInit {
     if (this.account) {
       this._transactionService
         .getTransactionsForAccount(this.account?.id)
-        .then((transactions: Transaction[]) => {
+        .pipe(take(1))
+        .subscribe((transactions: Transaction[]) => {
           this.transactions = transactions;
         });
     }

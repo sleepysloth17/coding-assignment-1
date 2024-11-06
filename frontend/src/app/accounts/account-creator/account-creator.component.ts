@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { take } from 'rxjs';
 import { Account } from '../account';
 import { AccountService } from '../account.service';
 
@@ -74,11 +75,13 @@ export class AccountCreatorComponent {
       this.formControl.valid &&
       this.formControl.value !== null
     ) {
-      console.log('created innit');
       this._accountService
         .createAccount(this.customerId, this.formControl.value)
-        .then((createdAccount: Account) => {
-          this.accountCreated.emit(createdAccount);
+        .pipe(take(1))
+        .subscribe((createdAccount: Account | null) => {
+          if (createdAccount) {
+            this.accountCreated.emit(createdAccount);
+          }
           this.formControl.reset(0);
         });
     }

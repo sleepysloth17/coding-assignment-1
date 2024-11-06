@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Customer } from '../customer';
 
 @Component({
@@ -12,6 +12,9 @@ import { Customer } from '../customer';
 export class CustomerListComponent {
   @Input() customers: Customer[] = [];
 
+  @Output() customerSelected: EventEmitter<Customer> =
+    new EventEmitter<Customer>();
+
   private selectedId = '';
 
   public isSelected(customer: Customer): boolean {
@@ -20,6 +23,6 @@ export class CustomerListComponent {
 
   public selectCustomer(selectedCustomer: Customer): void {
     this.selectedId = selectedCustomer.id;
-    console.log('selected', selectedCustomer);
+    this.customerSelected.emit(selectedCustomer);
   }
 }
