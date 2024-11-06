@@ -1,0 +1,8 @@
+name: Test Account Service
+on: [push]
+jobs:
+  test-transaction-service:
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      dockerfile-context: ./backend/account
+      image-tags: transaction/service:latest

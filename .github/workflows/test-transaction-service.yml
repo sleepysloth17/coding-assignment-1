@@ -1,4 +1,4 @@
-name: Test Transaction Servicce
+name: Test Transaction Service
 on: [push]
 jobs:
   test-transaction-service:
