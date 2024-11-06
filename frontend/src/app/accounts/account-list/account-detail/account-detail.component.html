@@ -1,6 +1,6 @@
 <ng-container *ngIf="account">
   <app-transaction-creator
-    [accountId]="account.id"
+    [account]="account"
     (transactionCreated)="onTransactionCreated($event)"
   ></app-transaction-creator>
 

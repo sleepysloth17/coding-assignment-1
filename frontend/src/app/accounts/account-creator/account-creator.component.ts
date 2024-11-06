@@ -39,22 +39,6 @@ export class AccountCreatorComponent {
     ]);
   }
 
-  public getError(): 'required' | 'min' | null {
-    console.log(Validators.required.name, Validators.min.name);
-
-    if (!this.formControl.touched) {
-      return null;
-    }
-
-    if (this.formControl.hasError('required')) {
-      return 'required';
-    } else if (this.formControl.hasError('min')) {
-      return 'min';
-    }
-
-    return null;
-  }
-
   public hasError(): boolean {
     return this.formControl.touched && this.formControl.invalid;
   }

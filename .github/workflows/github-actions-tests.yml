@@ -8,8 +8,8 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: "21"
+          distribution: "temurin"
       - name: Run Maven test for the account backend
         working-directory: ./backend/account
         run: mvn --batch-mode --update-snapshots test
@@ -20,8 +20,8 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: "21"
+          distribution: "temurin"
       - name: Run Maven test for the transaction backend
         working-directory: ./backend/transaction
         run: mvn --batch-mode --update-snapshots test
@@ -34,8 +34,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: ./fontend/package-lock.json
       - name: Install dependencies
         working-directory: ./frontend/
         run: npm ci

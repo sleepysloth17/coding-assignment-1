@@ -34,5 +34,8 @@ export class AccountDetailComponent implements OnInit {
 
   public onTransactionCreated(createdTransaction: Transaction): void {
     this.transactions.push(createdTransaction);
+    if (this.account) {
+      this.account.balance += createdTransaction.amount;
+    }
   }
 }

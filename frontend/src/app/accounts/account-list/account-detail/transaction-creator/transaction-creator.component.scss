@@ -28,8 +28,9 @@ h3 {
 .error {
   display: block;
   visibility: hidden;
-  color: red;
   font-size: 0.75em;
+  color: red;
+  height: 1.5em;
 
   &.has-error {
     visibility: visible;

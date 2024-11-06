@@ -8,6 +8,6 @@
   </button>
 </span>
 
-<span class="error" [class.has-error]="hasRequiredError()"
-  >Amount is required</span
->
+<span class="error" [class.has-error]="hasError()">
+  {{ getErrorMessage() }}
+</span>
