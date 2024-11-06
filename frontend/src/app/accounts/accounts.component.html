@@ -1,6 +1,5 @@
 <app-account-creator
-  *ngIf="!!customerId"
-  [customerId]="customerId"
-  (accountCreated)="onAccountCreation($event)"
+  *ngIf="!!customer"
+  [customer]="customer"
 ></app-account-creator>
-<app-account-list [accounts]="accounts"></app-account-list>
+<app-account-list [accounts]="customer?.accounts || []"></app-account-list>

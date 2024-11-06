@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -35,9 +28,6 @@ export class TransactionCreatorComponent implements OnChanges {
   };
 
   @Input() account: Account | null = null;
-
-  @Output() transactionCreated: EventEmitter<Transaction> =
-    new EventEmitter<Transaction>();
 
   public formControl: FormControl<number | null>;
 
@@ -90,16 +80,17 @@ export class TransactionCreatorComponent implements OnChanges {
 
   public submit(): void {
     if (
-      this.account?.id &&
+      this.account &&
       this.formControl.valid &&
       this.formControl.value !== null
     ) {
       this._transactionService
-        .createTransaction(this.account?.id, this.formControl.value)
+        .createTransaction(this.account.id, this.formControl.value)
         .pipe(take(1))
         .subscribe((createdTransaction: Transaction | null) => {
-          if (createdTransaction) {
-            this.transactionCreated.emit(createdTransaction);
+          if (this.account && createdTransaction) {
+            this.account.transactions.push(createdTransaction);
+            this.account.balance += createdTransaction.amount;
             this.formControl.reset(0);
           }
         });
