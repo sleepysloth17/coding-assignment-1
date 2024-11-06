@@ -95,7 +95,7 @@ class AccountControllerIntegrationTest {
   @Test
   void createCustomerAccountShouldReturnCreatedAccountForValidInput() throws Exception {
     when(transactionProxyService.createTransactionForAccount(any(), eq(15L)))
-        .thenReturn(new Transaction());
+        .thenReturn(new Transaction(null, null, null, 15L));
 
     final Customer customer = customerService.createCustomer("name", "surname");
 
@@ -126,11 +126,8 @@ class AccountControllerIntegrationTest {
 
   @Test
   void getCustomerAccountsShouldReturnAccountsIfCustomerExists() throws Exception {
-    when(transactionProxyService.createTransactionForAccount(any(), eq(10L)))
-        .thenReturn(new Transaction());
-
     final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 10L);
+    final Account account = accountService.createAccount(customer.getId(), 0L);
 
     mockMvc
         .perform(get("/customers/" + customer.getId() + "/accounts"))
@@ -138,7 +135,7 @@ class AccountControllerIntegrationTest {
         .andExpect(jsonPath("$[0]").isNotEmpty())
         .andExpect(jsonPath("$[0].id").value(account.getId().toString()))
         .andExpect(jsonPath("$[0].customerId").value(customer.getId().toString()))
-        .andExpect(jsonPath("$[0].balance").value("10"));
+        .andExpect(jsonPath("$[0].balance").value("0"));
   }
 
   @Test
@@ -150,18 +147,15 @@ class AccountControllerIntegrationTest {
 
   @Test
   void deleteAccountShouldDeleteAndReturnExistingAccount() throws Exception {
-    when(transactionProxyService.createTransactionForAccount(any(), eq(10L)))
-        .thenReturn(new Transaction());
-
     final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 10L);
+    final Account account = accountService.createAccount(customer.getId(), 0L);
 
     mockMvc
         .perform(delete("/accounts/" + account.getId()))
         .andExpect(status().is(HttpStatus.OK.value()))
         .andExpect(jsonPath("$.id").value(account.getId().toString()))
         .andExpect(jsonPath("$.customerId").value(customer.getId().toString()))
-        .andExpect(jsonPath("$.balance").value("10"));
+        .andExpect(jsonPath("$.balance").value("0"));
 
     final Optional<Account> optional = accountService.getAccount(account.getId());
     assertTrue(optional.isEmpty());
@@ -176,17 +170,14 @@ class AccountControllerIntegrationTest {
 
   @Test
   void getAccountShouldReturnAccountIfItExistsExist() throws Exception {
-    when(transactionProxyService.createTransactionForAccount(any(), eq(10L)))
-        .thenReturn(new Transaction());
-
     final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 10L);
+    final Account account = accountService.createAccount(customer.getId(), 0L);
 
     mockMvc
         .perform(get("/accounts/" + account.getId()))
         .andExpect(status().is(HttpStatus.OK.value()))
         .andExpect(jsonPath("$.id").value(account.getId().toString()))
         .andExpect(jsonPath("$.customerId").value(customer.getId().toString()))
-        .andExpect(jsonPath("$.balance").value("10"));
+        .andExpect(jsonPath("$.balance").value("0"));
   }
 }

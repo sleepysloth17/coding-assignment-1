@@ -7,31 +7,13 @@ import jakarta.persistence.Id;
 import java.util.UUID;
 
 @Entity
-public class Account {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
+public class Account extends AuditedEntity {
 
   private UUID customerId;
 
   private long balance;
 
   public Account() {}
-
-  public Account(UUID id, UUID customerId, long balance) {
-    this.id = id;
-    this.customerId = customerId;
-    this.balance = balance;
-  }
-
-  public UUID getId() {
-    return id;
-  }
-
-  public void setId(UUID id) {
-    this.id = id;
-  }
 
   public UUID getCustomerId() {
     return customerId;

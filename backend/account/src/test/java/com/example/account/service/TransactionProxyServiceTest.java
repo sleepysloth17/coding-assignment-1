@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.account.config.TransactionProxyProperties;
 import com.example.account.model.Transaction;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,11 +93,7 @@ class TransactionProxyServiceTest {
   }
 
   private Transaction getTransaction(long amount) {
-    final Transaction transaction = new Transaction();
-    transaction.setId(UUID.randomUUID());
-    transaction.setAccountId(accountId);
-    transaction.setAmount(amount);
-    return transaction;
+    return new Transaction(UUID.randomUUID(), Instant.now(), accountId, amount);
   }
 
   private static class MockTransactionProperties extends TransactionProxyProperties {

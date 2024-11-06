@@ -26,23 +26,24 @@ class TransactionTotalValidatorTest {
 
   @Mock private AccountRepository accountRepository;
 
-  private UUID accountId;
+  private Account account;
 
   @BeforeEach
   void setUp() {
-    accountId = UUID.randomUUID();
+    account = new Account();
+    account.setId(UUID.randomUUID());
   }
 
   @Test
   void shouldReturnValidIfAmountGreaterThanZero() {
-    final ValidationResponse response = transactionTotalValidator.validate(100L, accountId);
+    final ValidationResponse response = transactionTotalValidator.validate(100L, account.getId());
 
     assertTrue(response.isValid());
   }
 
   @Test
   void shouldReturnInvalidIfAmountIsNull() {
-    final ValidationResponse response = transactionTotalValidator.validate(null, accountId);
+    final ValidationResponse response = transactionTotalValidator.validate(null, account.getId());
 
     assertFalse(response.isValid());
     assertThat(
@@ -51,26 +52,29 @@ class TransactionTotalValidatorTest {
 
   @Test
   void shouldReturnValidIfAmountLessThanZeroAndEnoughInAccount() {
-    when(accountRepository.findById(accountId))
-        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID(), 10L)));
+    account.setBalance(10L);
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
-    final ValidationResponse response = transactionTotalValidator.validate(-5L, accountId);
+    final ValidationResponse response = transactionTotalValidator.validate(-5L, account.getId());
 
     assertTrue(response.isValid());
   }
 
   @Test
   void shouldReturnInvalidIfAmountLessThanZeroAndNotEnoughInAccount() {
-    when(accountRepository.findById(accountId))
-        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID(), 10L)));
+    account.setBalance(10L);
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
-    final ValidationResponse response = transactionTotalValidator.validate(-15L, accountId);
+    final ValidationResponse response = transactionTotalValidator.validate(-15L, account.getId());
 
     assertFalse(response.isValid());
     assertThat(
         response.getMessages(),
         is(
             Collections.singletonList(
-                "Account with id " + accountId + " has insufficient funds to withdraw " + 15L)));
+                "Account with id "
+                    + account.getId()
+                    + " has insufficient funds to withdraw "
+                    + 15L)));
   }
 }

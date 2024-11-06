@@ -37,7 +37,7 @@ class CustomerControllerTest {
     final String name = "name";
     final String surname = "surname";
 
-    final Customer customer = new Customer(customerId, name, surname);
+    final Customer customer = getCustomer(customerId);
 
     when(customerService.createCustomer(name, surname)).thenReturn(customer);
 
@@ -51,9 +51,9 @@ class CustomerControllerTest {
   void getCustomersShouldReturnListOfCustomers() {
     final List<Customer> customerList =
         List.of(
-            new Customer(UUID.randomUUID(), "", ""),
-            new Customer(UUID.randomUUID(), "", ""),
-            new Customer(UUID.randomUUID(), "", ""));
+            getCustomer(UUID.randomUUID()),
+            getCustomer(UUID.randomUUID()),
+            getCustomer(UUID.randomUUID()));
 
     when(customerService.getCustomers()).thenReturn(customerList);
 
@@ -65,7 +65,7 @@ class CustomerControllerTest {
 
   @Test
   void getCustomerWithIdShouldReturnCustomerIfExists() {
-    final Customer customer = new Customer(customerId, "name", "surname");
+    final Customer customer = getCustomer(customerId);
 
     when(customerService.getCustomer(customerId)).thenReturn(Optional.of(customer));
 
@@ -83,5 +83,13 @@ class CustomerControllerTest {
     final ResponseEntity<Customer> response = customerController.getCustomerWithId(customerId);
 
     assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+  }
+
+  private Customer getCustomer(UUID id) {
+    final Customer customer = new Customer();
+    customer.setId(id);
+    customer.setName("");
+    customer.setSurname("");
+    return customer;
   }
 }

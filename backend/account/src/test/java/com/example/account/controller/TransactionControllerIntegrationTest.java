@@ -18,6 +18,7 @@ import com.example.account.service.AccountService;
 import com.example.account.service.CustomerService;
 import com.example.account.service.TransactionProxyService;
 import com.jayway.jsonpath.JsonPath;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -131,23 +132,17 @@ class TransactionControllerIntegrationTest {
     mockMvc
         .perform(get("/accounts/" + account.getId() + "/transactions"))
         .andExpect(status().is(HttpStatus.OK.value()))
-        .andExpect(jsonPath("$[0].id").value(transaction.getId().toString()))
+        .andExpect(jsonPath("$[0].id").value(transaction.id().toString()))
         .andExpect(jsonPath("$[0].accountId").value(account.getId().toString()))
         .andExpect(jsonPath("$[0].amount").value("1"));
   }
 
   private Account createAccount() {
-    when(transactionProxyService.createTransactionForAccount(any(), eq(0L)))
-        .thenReturn(new Transaction());
     final Customer customer = customerService.createCustomer("name", "surname");
     return accountService.createAccount(customer.getId(), 0L);
   }
 
   private Transaction getTransaction(UUID id, UUID accountId, long amount) {
-    final Transaction transaction = new Transaction();
-    transaction.setId(id);
-    transaction.setAccountId(accountId);
-    transaction.setAmount(amount);
-    return transaction;
+    return new Transaction(id, Instant.now(), accountId, amount);
   }
 }
