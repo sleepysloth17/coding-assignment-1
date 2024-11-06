@@ -43,7 +43,7 @@ class AccountServiceTest {
 
   @BeforeEach
   void setUp() {
-    account = new Account(UUID.randomUUID(), UUID.randomUUID(), 0L);
+    account = getAccount(UUID.randomUUID());
   }
 
   @Test
@@ -94,7 +94,6 @@ class AccountServiceTest {
     assertThat(created.getCustomerId(), is(customerId));
   }
 
-  // TODO
   @Test
   void createAccountShouldCreateAccountAndInitialTransaction() {
     final UUID customerId = UUID.randomUUID();
@@ -110,7 +109,7 @@ class AccountServiceTest {
               return account;
             });
     when(transactionProxyService.createTransactionForAccount(accountId, 10L))
-        .thenReturn(new Transaction());
+        .thenReturn(new Transaction(null, null, null, 10L));
 
     final Account created = accountService.createAccount(customerId, 10L);
 
@@ -174,15 +173,20 @@ class AccountServiceTest {
   void getCustomerAccountsShouldReturnTheListOfMatchingAccounts() {
     final UUID customerId = UUID.randomUUID();
     final List<Account> accountList =
-        List.of(
-            new Account(UUID.randomUUID(), customerId, 0L),
-            new Account(UUID.randomUUID(), customerId, 0L),
-            new Account(UUID.randomUUID(), customerId, 0L));
+        List.of(getAccount(customerId), getAccount(customerId), getAccount(customerId));
 
     when(accountRepository.findByCustomerId(customerId)).thenReturn(accountList);
 
     final List<Account> result = accountService.getCustomerAccounts(customerId);
 
     assertThat(result, is(accountList));
+  }
+
+  private Account getAccount(UUID customerId) {
+    final Account a = new Account();
+    a.setId(UUID.randomUUID());
+    a.setCustomerId(customerId);
+    a.setBalance(0L);
+    return a;
   }
 }

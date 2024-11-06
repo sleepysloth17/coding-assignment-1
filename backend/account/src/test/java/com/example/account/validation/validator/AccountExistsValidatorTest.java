@@ -26,19 +26,19 @@ class AccountExistsValidatorTest {
 
   @Mock private AccountRepository accountRepository;
 
-  private UUID accountId;
+  private Account account;
 
   @BeforeEach
   void setUp() {
-    accountId = UUID.randomUUID();
+    account = new Account();
+    account.setId(UUID.randomUUID());
   }
 
   @Test
   void shouldReturnValidResponseIfUserAccountWithGivenIdExists() {
-    when(accountRepository.findById(accountId))
-        .thenReturn(Optional.of(new Account(accountId, UUID.randomUUID(), 0L)));
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
-    final ValidationResponse response = accountExistsValidator.validate(accountId);
+    final ValidationResponse response = accountExistsValidator.validate(account.getId());
 
     assertTrue(response.isValid());
     assertThat(response.getMessages(), is(Collections.emptyList()));
@@ -46,13 +46,13 @@ class AccountExistsValidatorTest {
 
   @Test
   void shouldReturnInvalidResponseIfNoUserAccountWithGivenIdExists() {
-    when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.empty());
 
-    final ValidationResponse response = accountExistsValidator.validate(accountId);
+    final ValidationResponse response = accountExistsValidator.validate(account.getId());
 
     assertFalse(response.isValid());
     assertThat(
         response.getMessages(),
-        is(Collections.singletonList("Account does not exist with id: " + accountId)));
+        is(Collections.singletonList("Account does not exist with id: " + account.getId())));
   }
 }

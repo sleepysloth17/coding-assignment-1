@@ -39,12 +39,17 @@ public class AccountService {
   }
 
   private Account handleAccountCreation(UUID customerId, long initialValue) {
-    final Account newAccount = accountRepository.save(new Account(null, customerId, initialValue));
+    final Account newAccount = new Account();
+    newAccount.setCustomerId(customerId);
+    newAccount.setBalance(initialValue);
+
+    final Account createdAccount = accountRepository.save(newAccount);
 
     if (initialValue > 0) {
       try {
         final Transaction transaction =
-            transactionProxyService.createTransactionForAccount(newAccount.getId(), initialValue);
+            transactionProxyService.createTransactionForAccount(
+                createdAccount.getId(), initialValue);
 
         // throw to rollback account creation
         if (transaction == null) {
@@ -53,12 +58,12 @@ public class AccountService {
         }
       } catch (Exception e) {
         // rollback account creation then rethrow the error
-        deleteAccount(newAccount.getId());
+        deleteAccount(createdAccount.getId());
         throw e;
       }
     }
 
-    return newAccount;
+    return createdAccount;
   }
 
   public Optional<Account> deleteAccount(UUID accountId) {

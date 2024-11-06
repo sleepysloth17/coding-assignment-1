@@ -24,7 +24,13 @@ public class CustomerService {
   public Customer createCustomer(String name, String surname) {
     return ValidationRunner.from(nameLengthValidator, name)
         .and(nameLengthValidator, surname)
-        .ifValidOrThrow(() -> customerRepository.save(new Customer(null, name, surname)));
+        .ifValidOrThrow(
+            () -> {
+              final Customer customer = new Customer();
+              customer.setName(name);
+              customer.setSurname(surname);
+              return customerRepository.save(customer);
+            });
   }
 
   public Optional<Customer> deleteCustomer(UUID customerId) {
