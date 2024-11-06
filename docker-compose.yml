@@ -1,0 +1,21 @@
+services:
+  transaction-service:
+    build:
+      context: ./backend/transaction/
+  account-service:
+    build:
+      context: ./backend/account/
+    depends_on: 
+      - transaction-service
+    environment:
+      - TRANSACTION_SERVICE_URL=http://transaction-service:8082/api
+  frontend:
+    build:
+      context: ./frontend/
+      args:
+        - API_URL=http://account-service:8081
+    depends_on:
+      - account-service
+      - transaction-service
+    ports:
+      - 4200:80

@@ -1,0 +1,10 @@
+node_modules
+.angular
+.vscode
+dist
+.editoconfig
+.gitignore
+.prettierignore
+.prettierrc
+eslint.config.js
+README.md
