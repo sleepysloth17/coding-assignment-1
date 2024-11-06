@@ -1,5 +1,4 @@
-<ng-container *ngIf="transaction">
-  <span class="body">
-    <span> Amount: {{ transaction.amount }} </span>
-  </span>
-</ng-container>
+<span *ngIf="transaction">
+  <span class="label">Date: </span>{{ transaction.createdAt | date: "full" }}
+  <span class="label">Amount: </span>{{ transaction.amount }}
+</span>

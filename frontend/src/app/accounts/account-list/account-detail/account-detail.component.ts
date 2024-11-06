@@ -27,13 +27,16 @@ export class AccountDetailComponent implements OnInit {
         .getTransactionsForAccount(this.account?.id)
         .pipe(take(1))
         .subscribe((transactions: Transaction[]) => {
-          this.transactions = transactions;
+          this.transactions = transactions.sort(
+            (a, b) => a.createdAt - b.createdAt,
+          );
         });
     }
   }
 
   public onTransactionCreated(createdTransaction: Transaction): void {
     this.transactions.push(createdTransaction);
+    this.transactions.sort((a, b) => a.createdAt - b.createdAt);
     if (this.account) {
       this.account.balance += createdTransaction.amount;
     }
