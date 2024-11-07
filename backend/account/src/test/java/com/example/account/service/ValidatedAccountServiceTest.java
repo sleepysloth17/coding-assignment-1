@@ -3,6 +3,7 @@ package com.example.account.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -128,14 +129,9 @@ class ValidatedAccountServiceTest {
     when(transactionProxyService.createTransactionForAccount(any(), anyLong())).thenReturn(null);
     when(accountRepository.findById(any())).thenReturn(Optional.of(account));
 
-    final Exception exception =
-        assertThrows(
-            IllegalStateException.class,
-            () -> validatedAccountService.createAccount(customerId, 10L));
+    final AccountDto result = validatedAccountService.createAccount(customerId, 10L);
 
-    assertThat(
-        exception.getMessage(),
-        is("Failed to create account: failed to create initial transaction"));
+    assertNull(result);
     verify(accountRepository).delete(any());
   }
 

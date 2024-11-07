@@ -9,10 +9,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ValidatedCustomerService implements ICustomerService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedCustomerService.class);
 
   private final CustomerRepository customerRepository;
 
@@ -29,12 +33,17 @@ public class ValidatedCustomerService implements ICustomerService {
         .and(nameLengthValidator, surname)
         .ifValidOrThrow(
             () -> {
-              final Customer customer = new Customer();
-              customer.setName(name);
-              customer.setSurname(surname);
-              return CustomerDto.fromCustomer(
-                  customerRepository.save(customer), Collections.emptyList());
+              final Customer customer = saveCustomer(name, surname);
+              LOGGER.info("Created customer with id: {}", customer.getId());
+              return CustomerDto.fromCustomer(customer, Collections.emptyList());
             });
+  }
+
+  private Customer saveCustomer(String name, String surname) {
+    final Customer customer = new Customer();
+    customer.setName(name);
+    customer.setSurname(surname);
+    return customerRepository.save(customer);
   }
 
   @Override

@@ -8,10 +8,14 @@ import com.example.account.validation.validator.AccountExistsValidator;
 import com.example.account.validation.validator.TransactionTotalValidator;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ValidatedTransactionService implements ITransactionService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedTransactionService.class);
 
   private final TransactionProxyService transactionProxyService;
 
@@ -55,6 +59,8 @@ public class ValidatedTransactionService implements ITransactionService {
               account.setBalance(account.getBalance() + amount);
               accountRepository.save(account);
             });
+
+    LOGGER.info("Created transaction of id {} for account of id {}", transaction.id(), accountId);
 
     return TransactionDto.fromTransaction(transaction);
   }
