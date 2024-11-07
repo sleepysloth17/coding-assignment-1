@@ -2,6 +2,7 @@ package com.example.account.dto;
 
 import com.example.account.model.Account;
 import com.example.account.model.Customer;
+import com.example.account.model.Transaction;
 import com.example.account.service.AccountService;
 import com.example.account.service.CustomerService;
 import com.example.account.service.TransactionService;

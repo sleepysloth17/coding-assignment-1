@@ -1,9 +1,11 @@
 package com.example.account.service;
 
+import com.example.account.dto.CustomerDto;
 import com.example.account.model.Customer;
 import com.example.account.repository.CustomerRepository;
 import com.example.account.validation.ValidationRunner;
 import com.example.account.validation.validator.StringLengthValidator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,7 +23,7 @@ public class CustomerService {
     this.nameLengthValidator = new StringLengthValidator(1, null);
   }
 
-  public Customer createCustomer(String name, String surname) {
+  public CustomerDto createCustomer(String name, String surname) {
     return ValidationRunner.from(nameLengthValidator, name)
         .and(nameLengthValidator, surname)
         .ifValidOrThrow(
@@ -29,14 +31,9 @@ public class CustomerService {
               final Customer customer = new Customer();
               customer.setName(name);
               customer.setSurname(surname);
-              return customerRepository.save(customer);
+              return CustomerDto.fromCustomer(
+                  customerRepository.save(customer), Collections.emptyList());
             });
-  }
-
-  public Optional<Customer> deleteCustomer(UUID customerId) {
-    final Optional<Customer> customer = getCustomer(customerId);
-    customer.ifPresent(customerRepository::delete);
-    return customer;
   }
 
   public Optional<Customer> getCustomer(UUID customerId) {

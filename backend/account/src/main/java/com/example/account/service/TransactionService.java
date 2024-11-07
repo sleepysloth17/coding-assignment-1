@@ -1,5 +1,6 @@
 package com.example.account.service;
 
+import com.example.account.dto.TransactionDto;
 import com.example.account.model.Transaction;
 import com.example.account.repository.AccountRepository;
 import com.example.account.validation.ValidationRunner;
@@ -31,7 +32,8 @@ public class TransactionService {
     this.transactionTotalValidator = transactionTotalValidator;
   }
 
-  public Transaction createTransactionForAccount(UUID accountId, long amount) {
+  // TODO
+  public TransactionDto createTransactionForAccount(UUID accountId, long amount) {
     return ValidationRunner.from(accountExistsValidator, accountId)
         .and(transactionTotalValidator, amount, accountId)
         .ifValidOrThrow(
@@ -44,7 +46,8 @@ public class TransactionService {
                         accountRepository.save(account);
                       });
 
-              return transactionProxyService.createTransactionForAccount(accountId, amount);
+              return TransactionDto.fromTransaction(
+                  transactionProxyService.createTransactionForAccount(accountId, amount));
             });
   }
 
