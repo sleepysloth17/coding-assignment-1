@@ -32,24 +32,31 @@ public class ValidatedTransactionService implements ITransactionService {
     this.transactionTotalValidator = transactionTotalValidator;
   }
 
-  // TODO
   @Override
   public TransactionDto createTransaction(UUID accountId, long amount) {
     return ValidationRunner.from(accountExistsValidator, accountId)
         .and(transactionTotalValidator, amount, accountId)
-        .ifValidOrThrow(
-            () -> {
-              accountRepository
-                  .findById(accountId)
-                  .ifPresent(
-                      account -> {
-                        account.setBalance(account.getBalance() + amount);
-                        accountRepository.save(account);
-                      });
+        .ifValidOrThrow(() -> this.handleTransactionCreation(accountId, amount));
+  }
 
-              return TransactionDto.fromTransaction(
-                  transactionProxyService.createTransactionForAccount(accountId, amount));
+  private TransactionDto handleTransactionCreation(UUID accountId, long amount) {
+    final Transaction transaction =
+        transactionProxyService.createTransactionForAccount(accountId, amount);
+
+    // If we failed to create the transaction, return null
+    if (transaction == null) {
+      return null;
+    }
+
+    accountRepository
+        .findById(accountId)
+        .ifPresent(
+            account -> {
+              account.setBalance(account.getBalance() + amount);
+              accountRepository.save(account);
             });
+
+    return TransactionDto.fromTransaction(transaction);
   }
 
   @Override

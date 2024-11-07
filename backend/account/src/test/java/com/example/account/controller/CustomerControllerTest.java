@@ -5,8 +5,9 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import com.example.account.dto.CustomerDto;
-import com.example.account.service.ValidatedCustomerService;
+import com.example.account.service.CustomerAssembler;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,7 @@ class CustomerControllerTest {
 
   @InjectMocks private CustomerController customerController;
 
-  @Mock private ValidatedCustomerService validatedCustomerService;
+  @Mock private CustomerAssembler customerAssembler;
 
   @Test
   void createCustomerShouldReturnCreatedCustomer() {
@@ -31,7 +32,7 @@ class CustomerControllerTest {
     final CustomerDto customer =
         new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList());
 
-    when(validatedCustomerService.createCustomer(name, surname)).thenReturn(customer);
+    when(customerAssembler.createCustomer(name, surname)).thenReturn(customer);
 
     final ResponseEntity<CustomerDto> response = customerController.createCustomer(name, surname);
 
@@ -39,20 +40,19 @@ class CustomerControllerTest {
     assertThat(response.getBody(), is(customer));
   }
 
-  // TODO
   @Test
   void getCustomersShouldReturnListOfCustomers() {
-    //    final List<CustomerDto> customerList =
-    //        List.of(
-    //                new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList()),
-    //                new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList()),
-    //                new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList()));
-    //
-    //    when(customerService.getCustomers()).thenReturn(customerList);
-    //
-    //    final ResponseEntity<List<Customer>> response = customerController.getCustomers();
-    //
-    //    assertThat(response.getStatusCode(), is(HttpStatus.OK));
-    //    assertThat(response.getBody(), is(customerList));
+    final List<CustomerDto> customerList =
+        List.of(
+            new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList()),
+            new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList()),
+            new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList()));
+
+    when(customerAssembler.getCustomers()).thenReturn(customerList);
+
+    final ResponseEntity<List<CustomerDto>> response = customerController.getCustomers();
+
+    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    assertThat(response.getBody(), is(customerList));
   }
 }

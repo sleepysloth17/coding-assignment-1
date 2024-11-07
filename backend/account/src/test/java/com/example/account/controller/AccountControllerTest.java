@@ -5,8 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import com.example.account.dto.AccountDto;
-import com.example.account.service.ValidatedAccountService;
-import com.example.account.service.ValidatedCustomerService;
+import com.example.account.service.IAccountService;
 import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +22,7 @@ class AccountControllerTest {
 
   @InjectMocks private AccountController accountController;
 
-  @Mock private ValidatedAccountService validatedAccountService;
-
-  @Mock private ValidatedCustomerService validatedCustomerService;
+  @Mock private IAccountService accountService;
 
   private UUID customerId;
 
@@ -40,7 +37,7 @@ class AccountControllerTest {
     final AccountDto account =
         new AccountDto(UUID.randomUUID(), UUID.randomUUID(), 0L, Collections.emptyList());
 
-    when(validatedAccountService.createAccount(customerId, initialValue)).thenReturn(account);
+    when(accountService.createAccount(customerId, initialValue)).thenReturn(account);
 
     final ResponseEntity<AccountDto> response =
         accountController.createCustomerAccount(customerId, initialValue);

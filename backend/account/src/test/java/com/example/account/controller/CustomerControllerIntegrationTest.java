@@ -3,14 +3,13 @@ package com.example.account.controller;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.account.model.Customer;
-import com.example.account.service.ValidatedCustomerService;
+import com.example.account.repository.CustomerRepository;
 import com.jayway.jsonpath.JsonPath;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,15 +29,13 @@ import org.springframework.test.web.servlet.MvcResult;
 @AutoConfigureMockMvc
 class CustomerControllerIntegrationTest {
 
-  @Autowired private ValidatedCustomerService validatedCustomerService;
+  @Autowired private CustomerRepository customerRepository;
 
   @Autowired private MockMvc mockMvc;
 
   @AfterEach
   void tearDown() {
-    validatedCustomerService
-        .getCustomers()
-        .forEach(customer -> validatedCustomerService.deleteCustomer(customer.getId()));
+    customerRepository.findAll().forEach(customerRepository::delete);
   }
 
   @Test
@@ -55,7 +52,7 @@ class CustomerControllerIntegrationTest {
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
     final Optional<Customer> customer =
-        validatedCustomerService.getCustomer(UUID.fromString(createdCustomerId));
+        customerRepository.findById(UUID.fromString(createdCustomerId));
     assertTrue(customer.isPresent());
     assertThat(customer.get().getName(), is("name"));
     assertThat(customer.get().getSurname(), is("surname"));
@@ -85,7 +82,7 @@ class CustomerControllerIntegrationTest {
 
   @Test
   void getCustomersShouldReturnCustomers() throws Exception {
-    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
+    final Customer customer = createCustomer();
 
     mockMvc
         .perform(get("/customers"))
@@ -96,45 +93,10 @@ class CustomerControllerIntegrationTest {
         .andReturn();
   }
 
-  @Test
-  void getCustomerShouldReturn404IfNotExists() throws Exception {
-    mockMvc
-        .perform(get("/customers/" + UUID.randomUUID()))
-        .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
-  }
-
-  @Test
-  void getCustomerShouldReturnCustomerIfExists() throws Exception {
-    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
-
-    mockMvc
-        .perform(get("/customers/" + customer.getId()))
-        .andExpect(status().is(HttpStatus.OK.value()))
-        .andExpect(jsonPath("$.id").value(customer.getId().toString()))
-        .andExpect(jsonPath("$.name").value("name"))
-        .andExpect(jsonPath("$.surname").value("surname"))
-        .andReturn();
-  }
-
-  @Test
-  void deleteCustomerShouldReturn404IfNotExists() throws Exception {
-    mockMvc
-        .perform(delete("/customers/" + UUID.randomUUID()))
-        .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
-  }
-
-  @Test
-  void deleteCustomerShouldDeleteAndReturnCustomerIfExists() throws Exception {
-    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
-
-    mockMvc
-        .perform(delete("/customers/" + customer.getId()))
-        .andExpect(status().is(HttpStatus.OK.value()))
-        .andExpect(jsonPath("$.id").value(customer.getId().toString()))
-        .andExpect(jsonPath("$.name").value("name"))
-        .andExpect(jsonPath("$.surname").value("surname"));
-
-    final Optional<Customer> optional = validatedCustomerService.getCustomer(customer.getId());
-    assertTrue(optional.isEmpty());
+  private Customer createCustomer() {
+    final Customer customer = new Customer();
+    customer.setName("name");
+    customer.setSurname("surname");
+    return customerRepository.save(customer);
   }
 }

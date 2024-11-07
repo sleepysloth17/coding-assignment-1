@@ -56,8 +56,8 @@ public class ValidatedAccountService implements IAccountService {
 
         // throw to rollback account creation
         if (transaction == null) {
-          throw new IllegalStateException(
-              "Failed to create account: failed to create initial transaction");
+          deleteAccountIfPresent(createdAccount);
+          return null;
         }
 
         // Both account and transaction creation succeeded, so return the assembled dto
@@ -65,13 +65,17 @@ public class ValidatedAccountService implements IAccountService {
             createdAccount, Collections.singletonList(TransactionDto.fromTransaction(transaction)));
       } catch (Exception e) {
         // rollback account creation then rethrow the error for end use consumption
-        accountRepository.findById(createdAccount.getId()).ifPresent(accountRepository::delete);
+        deleteAccountIfPresent(createdAccount);
         throw e;
       }
     } else {
       // No transactions created, so don't need to include them ont he dto
       return AccountDto.fromAccount(createdAccount, Collections.emptyList());
     }
+  }
+
+  private void deleteAccountIfPresent(Account account) {
+    accountRepository.findById(account.getId()).ifPresent(accountRepository::delete);
   }
 
   @Override

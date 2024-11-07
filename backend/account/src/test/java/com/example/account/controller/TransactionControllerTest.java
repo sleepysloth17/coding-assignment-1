@@ -6,8 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import com.example.account.dto.TransactionDto;
-import com.example.account.service.ValidatedAccountService;
-import com.example.account.service.ValidatedTransactionService;
+import com.example.account.service.ITransactionService;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,9 +23,7 @@ class TransactionControllerTest {
 
   @InjectMocks private TransactionController transactionController;
 
-  @Mock private ValidatedTransactionService validatedTransactionService;
-
-  @Mock private ValidatedAccountService validatedAccountService;
+  @Mock private ITransactionService transactionService;
 
   private UUID accountId;
 
@@ -40,7 +37,7 @@ class TransactionControllerTest {
     final TransactionDto transaction =
         new TransactionDto(UUID.randomUUID(), Instant.now(), UUID.randomUUID(), 0L);
 
-    when(validatedTransactionService.createTransactionForAccount(accountId, 10L)).thenReturn(transaction);
+    when(transactionService.createTransaction(accountId, 10L)).thenReturn(transaction);
 
     final ResponseEntity<TransactionDto> response =
         transactionController.createTransactionForAccount(accountId, 10L);
