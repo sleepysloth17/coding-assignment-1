@@ -10,12 +10,11 @@ import com.example.account.validation.validator.CustomerExistsValidator;
 import com.example.account.validation.validator.LongValueValidator;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AccountService {
+public class ValidatedAccountService implements IAccountService {
 
   private final AccountRepository accountRepository;
 
@@ -25,7 +24,7 @@ public class AccountService {
 
   private final LongValueValidator initialValueValidator;
 
-  public AccountService(
+  public ValidatedAccountService(
       AccountRepository accountRepository,
       TransactionProxyService transactionProxyService,
       CustomerExistsValidator customerExistsValidator) {
@@ -35,6 +34,7 @@ public class AccountService {
     this.initialValueValidator = new LongValueValidator(0L, null);
   }
 
+  @Override
   public AccountDto createAccount(UUID customerId, Long initialValue) {
     return ValidationRunner.from(customerExistsValidator, customerId)
         .and(initialValueValidator, initialValue)
@@ -60,28 +60,21 @@ public class AccountService {
               "Failed to create account: failed to create initial transaction");
         }
 
+        // Both account and transaction creation succeeded, so return the assembled dto
         return AccountDto.fromAccount(
             createdAccount, Collections.singletonList(TransactionDto.fromTransaction(transaction)));
       } catch (Exception e) {
-        // rollback account creation then rethrow the error
-        deleteAccount(createdAccount.getId());
+        // rollback account creation then rethrow the error for end use consumption
+        accountRepository.findById(createdAccount.getId()).ifPresent(accountRepository::delete);
         throw e;
       }
     } else {
+      // No transactions created, so don't need to include them ont he dto
       return AccountDto.fromAccount(createdAccount, Collections.emptyList());
     }
   }
 
-  private Optional<Account> deleteAccount(UUID accountId) {
-    final Optional<Account> account = getAccount(accountId);
-    account.ifPresent(accountRepository::delete);
-    return account;
-  }
-
-  private Optional<Account> getAccount(UUID accountId) {
-    return accountRepository.findById(accountId);
-  }
-
+  @Override
   public List<Account> getCustomerAccounts(UUID customerId) {
     return accountRepository.findByCustomerId(customerId);
   }

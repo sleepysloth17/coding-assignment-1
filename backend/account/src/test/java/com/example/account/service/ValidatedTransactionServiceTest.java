@@ -28,9 +28,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionServiceTest {
+class ValidatedTransactionServiceTest {
 
-  @InjectMocks private TransactionService transactionService;
+  @InjectMocks private ValidatedTransactionService validatedTransactionService;
 
   @Mock private TransactionProxyService transactionProxyService;
 
@@ -55,7 +55,7 @@ class TransactionServiceTest {
 
     assertThrows(
         ValidationException.class,
-        () -> transactionService.createTransactionForAccount(accountId, 10L));
+        () -> validatedTransactionService.createTransactionForAccount(accountId, 10L));
 
     verify(transactionProxyService, never()).createTransactionForAccount(any(), anyLong());
   }
@@ -68,7 +68,7 @@ class TransactionServiceTest {
 
     assertThrows(
         ValidationException.class,
-        () -> transactionService.createTransactionForAccount(accountId, 10L));
+        () -> validatedTransactionService.createTransactionForAccount(accountId, 10L));
 
     verify(transactionProxyService, never()).createTransactionForAccount(any(), anyLong());
   }
@@ -86,7 +86,7 @@ class TransactionServiceTest {
     when(transactionProxyService.createTransactionForAccount(accountId, 10L))
         .thenReturn(transaction);
 
-    final Transaction result = transactionService.createTransactionForAccount(accountId, 10L);
+    final Transaction result = validatedTransactionService.createTransactionForAccount(accountId, 10L);
 
     account.setBalance(10L);
 
@@ -101,7 +101,7 @@ class TransactionServiceTest {
 
     when(transactionProxyService.getAccountTransactions(accountId)).thenReturn(transactionList);
 
-    final List<Transaction> result = transactionService.getAccountTransactions(accountId);
+    final List<Transaction> result = validatedTransactionService.getAccountTransactions(accountId);
 
     assertThat(result, is(transactionList));
   }

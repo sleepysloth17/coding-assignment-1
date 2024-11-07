@@ -15,8 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.account.model.Account;
 import com.example.account.model.Customer;
 import com.example.account.model.Transaction;
-import com.example.account.service.AccountService;
-import com.example.account.service.CustomerService;
+import com.example.account.service.ValidatedAccountService;
+import com.example.account.service.ValidatedCustomerService;
 import com.example.account.service.TransactionProxyService;
 import com.jayway.jsonpath.JsonPath;
 import java.util.Optional;
@@ -37,9 +37,9 @@ import org.springframework.test.web.servlet.MvcResult;
 @AutoConfigureMockMvc
 class AccountControllerIntegrationTest {
 
-  @Autowired private CustomerService customerService;
+  @Autowired private ValidatedCustomerService validatedCustomerService;
 
-  @Autowired private AccountService accountService;
+  @Autowired private ValidatedAccountService validatedAccountService;
 
   @MockBean private TransactionProxyService transactionProxyService;
 
@@ -60,7 +60,7 @@ class AccountControllerIntegrationTest {
 
   @Test
   void createCustomerAccountShouldReturn422IfInitialValueInvalid() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
 
     mockMvc
         .perform(post("/customers/" + customer.getId() + "/accounts").param("initialValue", "-15"))
@@ -73,7 +73,7 @@ class AccountControllerIntegrationTest {
 
   @Test
   void createCustomerAccountShouldReturnCreatedAccountWithDefaultInitialValue() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
 
     final MvcResult result =
         mockMvc
@@ -86,7 +86,7 @@ class AccountControllerIntegrationTest {
     final String createdAccountId =
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
-    final Optional<Account> account = accountService.getAccount(UUID.fromString(createdAccountId));
+    final Optional<Account> account = validatedAccountService.getAccount(UUID.fromString(createdAccountId));
     assertTrue(account.isPresent());
     assertThat(account.get().getCustomerId(), is(customer.getId()));
     assertThat(account.get().getBalance(), is(0L));
@@ -97,7 +97,7 @@ class AccountControllerIntegrationTest {
     when(transactionProxyService.createTransactionForAccount(any(), eq(15L)))
         .thenReturn(new Transaction(null, null, null, 15L));
 
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
 
     final MvcResult result =
         mockMvc
@@ -111,7 +111,7 @@ class AccountControllerIntegrationTest {
     final String createdAccountId =
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
-    final Optional<Account> account = accountService.getAccount(UUID.fromString(createdAccountId));
+    final Optional<Account> account = validatedAccountService.getAccount(UUID.fromString(createdAccountId));
     assertTrue(account.isPresent());
     assertThat(account.get().getCustomerId(), is(customer.getId()));
     assertThat(account.get().getBalance(), is(15L));
@@ -126,8 +126,8 @@ class AccountControllerIntegrationTest {
 
   @Test
   void getCustomerAccountsShouldReturnAccountsIfCustomerExists() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 0L);
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
+    final Account account = validatedAccountService.createAccount(customer.getId(), 0L);
 
     mockMvc
         .perform(get("/customers/" + customer.getId() + "/accounts"))
@@ -147,8 +147,8 @@ class AccountControllerIntegrationTest {
 
   @Test
   void deleteAccountShouldDeleteAndReturnExistingAccount() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 0L);
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
+    final Account account = validatedAccountService.createAccount(customer.getId(), 0L);
 
     mockMvc
         .perform(delete("/accounts/" + account.getId()))
@@ -157,7 +157,7 @@ class AccountControllerIntegrationTest {
         .andExpect(jsonPath("$.customerId").value(customer.getId().toString()))
         .andExpect(jsonPath("$.balance").value("0"));
 
-    final Optional<Account> optional = accountService.getAccount(account.getId());
+    final Optional<Account> optional = validatedAccountService.getAccount(account.getId());
     assertTrue(optional.isEmpty());
   }
 
@@ -170,8 +170,8 @@ class AccountControllerIntegrationTest {
 
   @Test
   void getAccountShouldReturnAccountIfItExistsExist() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 0L);
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
+    final Account account = validatedAccountService.createAccount(customer.getId(), 0L);
 
     mockMvc
         .perform(get("/accounts/" + account.getId()))

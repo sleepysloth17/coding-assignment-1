@@ -14,8 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.account.model.Account;
 import com.example.account.model.Customer;
 import com.example.account.model.Transaction;
-import com.example.account.service.AccountService;
-import com.example.account.service.CustomerService;
+import com.example.account.service.ValidatedAccountService;
+import com.example.account.service.ValidatedCustomerService;
 import com.example.account.service.TransactionProxyService;
 import com.jayway.jsonpath.JsonPath;
 import java.time.Instant;
@@ -38,9 +38,9 @@ import org.springframework.test.web.servlet.MvcResult;
 @AutoConfigureMockMvc
 class TransactionControllerIntegrationTest {
 
-  @Autowired private CustomerService customerService;
+  @Autowired private ValidatedCustomerService validatedCustomerService;
 
-  @Autowired private AccountService accountService;
+  @Autowired private ValidatedAccountService validatedAccountService;
 
   @MockBean private TransactionProxyService transactionProxyService;
 
@@ -80,7 +80,7 @@ class TransactionControllerIntegrationTest {
         .perform(post("/accounts/" + account.getId() + "/transactions").param("amount", "10"))
         .andExpect(status().is(HttpStatus.OK.value()));
 
-    final Optional<Account> optional = accountService.getAccount(account.getId());
+    final Optional<Account> optional = validatedAccountService.getAccount(account.getId());
     assertTrue(optional.isPresent());
     assertThat(optional.get().getBalance(), is(10L));
   }
@@ -138,8 +138,8 @@ class TransactionControllerIntegrationTest {
   }
 
   private Account createAccount() {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    return accountService.createAccount(customer.getId(), 0L);
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
+    return validatedAccountService.createAccount(customer.getId(), 0L);
   }
 
   private Transaction getTransaction(UUID id, UUID accountId, long amount) {

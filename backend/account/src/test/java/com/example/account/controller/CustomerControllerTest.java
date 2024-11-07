@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import com.example.account.dto.CustomerDto;
-import com.example.account.service.CustomerService;
+import com.example.account.service.ValidatedCustomerService;
 import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class CustomerControllerTest {
 
   @InjectMocks private CustomerController customerController;
 
-  @Mock private CustomerService customerService;
+  @Mock private ValidatedCustomerService validatedCustomerService;
 
   @Test
   void createCustomerShouldReturnCreatedCustomer() {
@@ -31,7 +31,7 @@ class CustomerControllerTest {
     final CustomerDto customer =
         new CustomerDto(UUID.randomUUID(), "", "", Collections.emptyList());
 
-    when(customerService.createCustomer(name, surname)).thenReturn(customer);
+    when(validatedCustomerService.createCustomer(name, surname)).thenReturn(customer);
 
     final ResponseEntity<CustomerDto> response = customerController.createCustomer(name, surname);
 

@@ -1,7 +1,7 @@
 package com.example.account.controller;
 
 import com.example.account.dto.AccountDto;
-import com.example.account.service.AccountService;
+import com.example.account.service.IAccountService;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class AccountController {
 
-  public final AccountService accountService;
+  public final IAccountService accountService;
 
-  public AccountController(AccountService accountService) {
+  public AccountController(IAccountService accountService) {
     this.accountService = accountService;
   }
 

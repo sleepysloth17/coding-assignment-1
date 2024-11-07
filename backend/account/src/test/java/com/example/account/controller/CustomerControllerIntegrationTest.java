@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.account.model.Customer;
-import com.example.account.service.CustomerService;
+import com.example.account.service.ValidatedCustomerService;
 import com.jayway.jsonpath.JsonPath;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,15 +30,15 @@ import org.springframework.test.web.servlet.MvcResult;
 @AutoConfigureMockMvc
 class CustomerControllerIntegrationTest {
 
-  @Autowired private CustomerService customerService;
+  @Autowired private ValidatedCustomerService validatedCustomerService;
 
   @Autowired private MockMvc mockMvc;
 
   @AfterEach
   void tearDown() {
-    customerService
+    validatedCustomerService
         .getCustomers()
-        .forEach(customer -> customerService.deleteCustomer(customer.getId()));
+        .forEach(customer -> validatedCustomerService.deleteCustomer(customer.getId()));
   }
 
   @Test
@@ -55,7 +55,7 @@ class CustomerControllerIntegrationTest {
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
     final Optional<Customer> customer =
-        customerService.getCustomer(UUID.fromString(createdCustomerId));
+        validatedCustomerService.getCustomer(UUID.fromString(createdCustomerId));
     assertTrue(customer.isPresent());
     assertThat(customer.get().getName(), is("name"));
     assertThat(customer.get().getSurname(), is("surname"));
@@ -85,7 +85,7 @@ class CustomerControllerIntegrationTest {
 
   @Test
   void getCustomersShouldReturnCustomers() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
 
     mockMvc
         .perform(get("/customers"))
@@ -105,7 +105,7 @@ class CustomerControllerIntegrationTest {
 
   @Test
   void getCustomerShouldReturnCustomerIfExists() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
 
     mockMvc
         .perform(get("/customers/" + customer.getId()))
@@ -125,7 +125,7 @@ class CustomerControllerIntegrationTest {
 
   @Test
   void deleteCustomerShouldDeleteAndReturnCustomerIfExists() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = validatedCustomerService.createCustomer("name", "surname");
 
     mockMvc
         .perform(delete("/customers/" + customer.getId()))
@@ -134,7 +134,7 @@ class CustomerControllerIntegrationTest {
         .andExpect(jsonPath("$.name").value("name"))
         .andExpect(jsonPath("$.surname").value("surname"));
 
-    final Optional<Customer> optional = customerService.getCustomer(customer.getId());
+    final Optional<Customer> optional = validatedCustomerService.getCustomer(customer.getId());
     assertTrue(optional.isEmpty());
   }
 }

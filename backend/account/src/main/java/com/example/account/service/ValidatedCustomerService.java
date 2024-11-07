@@ -12,17 +12,18 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomerService {
+public class ValidatedCustomerService implements ICustomerService {
 
   private final CustomerRepository customerRepository;
 
   private final StringLengthValidator nameLengthValidator;
 
-  public CustomerService(CustomerRepository customerRepository) {
+  public ValidatedCustomerService(CustomerRepository customerRepository) {
     this.customerRepository = customerRepository;
     this.nameLengthValidator = new StringLengthValidator(1, null);
   }
 
+  @Override
   public CustomerDto createCustomer(String name, String surname) {
     return ValidationRunner.from(nameLengthValidator, name)
         .and(nameLengthValidator, surname)
@@ -36,10 +37,12 @@ public class CustomerService {
             });
   }
 
+  @Override
   public Optional<Customer> getCustomer(UUID customerId) {
     return customerRepository.findById(customerId);
   }
 
+  @Override
   public List<Customer> getCustomers() {
     return customerRepository.findAll();
   }

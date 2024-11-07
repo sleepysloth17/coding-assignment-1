@@ -11,7 +11,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TransactionService {
+public class ValidatedTransactionService implements ITransactionService {
 
   private final TransactionProxyService transactionProxyService;
 
@@ -21,7 +21,7 @@ public class TransactionService {
 
   private final TransactionTotalValidator transactionTotalValidator;
 
-  public TransactionService(
+  public ValidatedTransactionService(
       TransactionProxyService transactionProxyService,
       AccountRepository accountRepository,
       AccountExistsValidator accountExistsValidator,
@@ -33,7 +33,8 @@ public class TransactionService {
   }
 
   // TODO
-  public TransactionDto createTransactionForAccount(UUID accountId, long amount) {
+  @Override
+  public TransactionDto createTransaction(UUID accountId, long amount) {
     return ValidationRunner.from(accountExistsValidator, accountId)
         .and(transactionTotalValidator, amount, accountId)
         .ifValidOrThrow(
@@ -51,7 +52,8 @@ public class TransactionService {
             });
   }
 
-  public List<Transaction> getAccountTransactions(UUID accountId) {
+  @Override
+  public List<Transaction> getTransactions(UUID accountId) {
     return transactionProxyService.getAccountTransactions(accountId);
   }
 }

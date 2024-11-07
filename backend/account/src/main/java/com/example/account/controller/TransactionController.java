@@ -1,7 +1,7 @@
 package com.example.account.controller;
 
 import com.example.account.dto.TransactionDto;
-import com.example.account.service.TransactionService;
+import com.example.account.service.ITransactionService;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class TransactionController {
 
-  private final TransactionService transactionService;
+  private final ITransactionService transactionService;
 
-  public TransactionController(TransactionService transactionService) {
+  public TransactionController(ITransactionService transactionService) {
     this.transactionService = transactionService;
   }
 
@@ -25,7 +25,6 @@ public class TransactionController {
   public ResponseEntity<TransactionDto> createTransactionForAccount(
       @PathVariable(value = "accountId") UUID accountId,
       @RequestParam(value = "amount", required = true) long amount) {
-
-    return ResponseEntity.ok(transactionService.createTransactionForAccount(accountId, amount));
+    return ResponseEntity.ok(transactionService.createTransaction(accountId, amount));
   }
 }
