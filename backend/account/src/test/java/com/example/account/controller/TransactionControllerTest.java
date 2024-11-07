@@ -5,13 +5,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
-import com.example.account.model.Account;
-import com.example.account.model.Transaction;
-import com.example.account.service.AccountService;
-import com.example.account.service.TransactionService;
+import com.example.account.dto.TransactionDto;
+import com.example.account.service.ITransactionService;
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,9 +23,7 @@ class TransactionControllerTest {
 
   @InjectMocks private TransactionController transactionController;
 
-  @Mock private TransactionService transactionService;
-
-  @Mock private AccountService accountService;
+  @Mock private ITransactionService transactionService;
 
   private UUID accountId;
 
@@ -40,57 +34,16 @@ class TransactionControllerTest {
 
   @Test
   void shouldReturnCreatedTransaction() {
-    final Transaction transaction = getTransaction(accountId, 10L);
+    final TransactionDto transaction =
+        new TransactionDto(UUID.randomUUID(), Instant.now(), UUID.randomUUID(), 0L);
 
-    when(transactionService.createTransactionForAccount(accountId, 10L)).thenReturn(transaction);
+    when(transactionService.createTransaction(accountId, 10L)).thenReturn(transaction);
 
-    final ResponseEntity<Transaction> response =
+    final ResponseEntity<TransactionDto> response =
         transactionController.createTransactionForAccount(accountId, 10L);
 
     assertNotNull(response);
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
     assertThat(response.getBody(), is(transaction));
-  }
-
-  @Test
-  void shouldReturnAccountTransactionsIfAccountExists() {
-    final List<Transaction> transactionList =
-        List.of(
-            getTransaction(accountId, 10L),
-            getTransaction(accountId, 11L),
-            getTransaction(accountId, 12L));
-
-    when(accountService.getAccount(accountId)).thenReturn(Optional.of(getAccount()));
-    when(transactionService.getAccountTransactions(accountId)).thenReturn(transactionList);
-
-    final ResponseEntity<List<Transaction>> response =
-        transactionController.getAllTransactionsForAccount(accountId);
-
-    assertNotNull(response);
-    assertThat(response.getStatusCode(), is(HttpStatus.OK));
-    assertThat(response.getBody(), is(transactionList));
-  }
-
-  @Test
-  void shouldReturn404IfAccountDoesNotExist() {
-    when(accountService.getAccount(accountId)).thenReturn(Optional.empty());
-
-    final ResponseEntity<List<Transaction>> response =
-        transactionController.getAllTransactionsForAccount(accountId);
-
-    assertNotNull(response);
-    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-  }
-
-  private Account getAccount() {
-    final Account account = new Account();
-    account.setId(accountId);
-    account.setCustomerId(UUID.randomUUID());
-    account.setBalance(0L);
-    return account;
-  }
-
-  private Transaction getTransaction(UUID accountId, long amount) {
-    return new Transaction(UUID.randomUUID(), Instant.now(), accountId, amount);
   }
 }

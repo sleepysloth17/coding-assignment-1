@@ -1,16 +1,8 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
-import { take } from 'rxjs';
-import { Account } from './account';
+import { Component, Input } from '@angular/core';
+import { Customer } from '../home/customer';
 import { AccountCreatorComponent } from './account-creator/account-creator.component';
 import { AccountListComponent } from './account-list/account-list.component';
-import { AccountService } from './account.service';
 
 @Component({
   selector: 'app-accounts',
@@ -19,33 +11,6 @@ import { AccountService } from './account.service';
   templateUrl: './accounts.component.html',
   styleUrl: './accounts.component.scss',
 })
-export class AccountsComponent implements OnInit, OnChanges {
-  @Input() customerId: string | null = null;
-
-  public accounts: Account[] = [];
-
-  constructor(private _accountService: AccountService) {}
-
-  public ngOnInit(): void {
-    this._updateAccounts();
-  }
-
-  public ngOnChanges(changes: SimpleChanges) {
-    if (changes['customerId'].previousValue !== this.customerId) {
-      this._updateAccounts();
-    }
-  }
-
-  public onAccountCreation(createdAccount: Account) {
-    this.accounts.push(createdAccount);
-  }
-
-  private _updateAccounts(): void {
-    if (this.customerId) {
-      this._accountService
-        .getAccounts(this.customerId)
-        .pipe(take(1))
-        .subscribe((accounts: Account[]) => (this.accounts = accounts));
-    }
-  }
+export class AccountsComponent {
+  @Input() customer: Customer | null = null;
 }

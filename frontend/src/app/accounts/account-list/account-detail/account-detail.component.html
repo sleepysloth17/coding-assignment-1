@@ -1,13 +1,10 @@
 <ng-container *ngIf="account">
-  <app-transaction-creator
-    [account]="account"
-    (transactionCreated)="onTransactionCreated($event)"
-  ></app-transaction-creator>
+  <app-transaction-creator [account]="account"></app-transaction-creator>
 
   <h3>Transactions for Account</h3>
 
   <ul>
-    <li *ngFor="let transaction of transactions">
+    <li *ngFor="let transaction of account.transactions">
       <app-transaction [transaction]="transaction"></app-transaction>
     </li>
   </ul>

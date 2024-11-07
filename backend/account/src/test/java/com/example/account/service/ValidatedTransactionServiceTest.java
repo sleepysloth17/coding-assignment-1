@@ -2,6 +2,7 @@ package com.example.account.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.account.dto.TransactionDto;
 import com.example.account.model.Account;
 import com.example.account.model.Transaction;
 import com.example.account.repository.AccountRepository;
@@ -28,9 +30,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionServiceTest {
+class ValidatedTransactionServiceTest {
 
-  @InjectMocks private TransactionService transactionService;
+  @InjectMocks private ValidatedTransactionService validatedTransactionService;
 
   @Mock private TransactionProxyService transactionProxyService;
 
@@ -55,7 +57,7 @@ class TransactionServiceTest {
 
     assertThrows(
         ValidationException.class,
-        () -> transactionService.createTransactionForAccount(accountId, 10L));
+        () -> validatedTransactionService.createTransaction(accountId, 10L));
 
     verify(transactionProxyService, never()).createTransactionForAccount(any(), anyLong());
   }
@@ -68,7 +70,7 @@ class TransactionServiceTest {
 
     assertThrows(
         ValidationException.class,
-        () -> transactionService.createTransactionForAccount(accountId, 10L));
+        () -> validatedTransactionService.createTransaction(accountId, 10L));
 
     verify(transactionProxyService, never()).createTransactionForAccount(any(), anyLong());
   }
@@ -82,16 +84,38 @@ class TransactionServiceTest {
     when(accountExistsValidator.validate(accountId)).thenReturn(new ValidationResponse(true, ""));
     when(transactionTotalValidator.validate(10L, accountId))
         .thenReturn(new ValidationResponse(true, ""));
-    when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
     when(transactionProxyService.createTransactionForAccount(accountId, 10L))
         .thenReturn(transaction);
+    when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
 
-    final Transaction result = transactionService.createTransactionForAccount(accountId, 10L);
+    final TransactionDto result = validatedTransactionService.createTransaction(accountId, 10L);
 
     account.setBalance(10L);
 
     verify(accountRepository).save(account);
-    assertThat(result, is(transaction));
+    assertThat(result.id(), is(transaction.id()));
+    assertThat(result.createdAt(), is(transaction.createdAt()));
+    assertThat(result.accountId(), is(transaction.accountId()));
+    assertThat(result.amount(), is(transaction.amount()));
+  }
+
+  @Test
+  void createTransactionShouldNotUpdateAccountBalanceOnFailureToCreateTransaction() {
+    final Transaction transaction = getTransaction();
+    final Account account = new Account();
+    account.setId(accountId);
+
+    when(accountExistsValidator.validate(accountId)).thenReturn(new ValidationResponse(true, ""));
+    when(transactionTotalValidator.validate(10L, accountId))
+        .thenReturn(new ValidationResponse(true, ""));
+    when(transactionProxyService.createTransactionForAccount(accountId, 10L)).thenReturn(null);
+
+    final TransactionDto result = validatedTransactionService.createTransaction(accountId, 10L);
+
+    account.setBalance(10L);
+
+    verify(accountRepository, never()).save(any());
+    assertNull(result);
   }
 
   @Test
@@ -101,7 +125,7 @@ class TransactionServiceTest {
 
     when(transactionProxyService.getAccountTransactions(accountId)).thenReturn(transactionList);
 
-    final List<Transaction> result = transactionService.getAccountTransactions(accountId);
+    final List<Transaction> result = validatedTransactionService.getTransactions(accountId);
 
     assertThat(result, is(transactionList));
   }

@@ -3,10 +3,7 @@ package com.example.account.controller;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -14,12 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.account.model.Account;
 import com.example.account.model.Customer;
 import com.example.account.model.Transaction;
-import com.example.account.service.AccountService;
-import com.example.account.service.CustomerService;
+import com.example.account.repository.AccountRepository;
+import com.example.account.repository.CustomerRepository;
 import com.example.account.service.TransactionProxyService;
 import com.jayway.jsonpath.JsonPath;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -38,9 +34,9 @@ import org.springframework.test.web.servlet.MvcResult;
 @AutoConfigureMockMvc
 class TransactionControllerIntegrationTest {
 
-  @Autowired private CustomerService customerService;
+  @Autowired private CustomerRepository customerRepository;
 
-  @Autowired private AccountService accountService;
+  @Autowired private AccountRepository accountRepository;
 
   @MockBean private TransactionProxyService transactionProxyService;
 
@@ -80,7 +76,7 @@ class TransactionControllerIntegrationTest {
         .perform(post("/accounts/" + account.getId() + "/transactions").param("amount", "10"))
         .andExpect(status().is(HttpStatus.OK.value()));
 
-    final Optional<Account> optional = accountService.getAccount(account.getId());
+    final Optional<Account> optional = accountRepository.findById(account.getId());
     assertTrue(optional.isPresent());
     assertThat(optional.get().getBalance(), is(10L));
   }
@@ -114,32 +110,19 @@ class TransactionControllerIntegrationTest {
                         + " has insufficient funds to withdraw 10"));
   }
 
-  @Test
-  void getAllTransactionsForAccountShouldReturn404IfAccountDoesNotExist() throws Exception {
-    mockMvc
-        .perform(get("/accounts/" + UUID.randomUUID() + "/transactions"))
-        .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
-  }
-
-  @Test
-  void getAllTransactionsForAccountShouldReturnTransactionsForAccount() throws Exception {
-    final Account account = createAccount();
-    final Transaction transaction = getTransaction(UUID.randomUUID(), account.getId(), 1L);
-
-    when(transactionProxyService.getAccountTransactions(account.getId()))
-        .thenReturn(Collections.singletonList(transaction));
-
-    mockMvc
-        .perform(get("/accounts/" + account.getId() + "/transactions"))
-        .andExpect(status().is(HttpStatus.OK.value()))
-        .andExpect(jsonPath("$[0].id").value(transaction.id().toString()))
-        .andExpect(jsonPath("$[0].accountId").value(account.getId().toString()))
-        .andExpect(jsonPath("$[0].amount").value("1"));
-  }
-
   private Account createAccount() {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    return accountService.createAccount(customer.getId(), 0L);
+    final Customer customer = createCustomer();
+    final Account account = new Account();
+    account.setCustomerId(customer.getId());
+    account.setBalance(0L);
+    return accountRepository.save(account);
+  }
+
+  private Customer createCustomer() {
+    final Customer customer = new Customer();
+    customer.setName("name");
+    customer.setSurname("surname");
+    return customerRepository.save(customer);
   }
 
   private Transaction getTransaction(UUID id, UUID accountId, long amount) {

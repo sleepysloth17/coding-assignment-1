@@ -3,6 +3,7 @@ package com.example.account.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.account.dto.AccountDto;
 import com.example.account.model.Account;
 import com.example.account.model.Transaction;
 import com.example.account.repository.AccountRepository;
@@ -21,7 +23,6 @@ import com.example.account.validation.validator.CustomerExistsValidator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,9 +30,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class AccountServiceTest {
+class ValidatedAccountServiceTest {
 
-  @InjectMocks private AccountService accountService;
+  @InjectMocks private ValidatedAccountService validatedAccountService;
 
   @Mock private AccountRepository accountRepository;
 
@@ -39,20 +40,14 @@ class AccountServiceTest {
 
   @Mock private CustomerExistsValidator customerExistsValidator;
 
-  private Account account;
-
-  @BeforeEach
-  void setUp() {
-    account = getAccount(UUID.randomUUID());
-  }
-
   @Test
   void createAccountShouldNotCreateAccountWithNegativeInitialValue() {
     final UUID customerId = UUID.randomUUID();
 
     when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
 
-    assertThrows(ValidationException.class, () -> accountService.createAccount(customerId, -10L));
+    assertThrows(
+        ValidationException.class, () -> validatedAccountService.createAccount(customerId, -10L));
 
     verify(accountRepository, never()).save(any());
   }
@@ -64,7 +59,8 @@ class AccountServiceTest {
     when(customerExistsValidator.validate(customerId))
         .thenReturn(new ValidationResponse(true, null));
 
-    assertThrows(ValidationException.class, () -> accountService.createAccount(customerId, -10L));
+    assertThrows(
+        ValidationException.class, () -> validatedAccountService.createAccount(customerId, -10L));
 
     verify(accountRepository, never()).save(any());
   }
@@ -76,7 +72,8 @@ class AccountServiceTest {
     when(customerExistsValidator.validate(customerId))
         .thenReturn(new ValidationResponse(false, ""));
 
-    assertThrows(ValidationException.class, () -> accountService.createAccount(customerId, 10L));
+    assertThrows(
+        ValidationException.class, () -> validatedAccountService.createAccount(customerId, 10L));
 
     verify(accountRepository, never()).save(any());
   }
@@ -88,16 +85,18 @@ class AccountServiceTest {
     when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
     when(accountRepository.save(any())).then(returnsFirstArg());
 
-    final Account created = accountService.createAccount(customerId, 0L);
+    final AccountDto created = validatedAccountService.createAccount(customerId, 0L);
 
     assertNotNull(created);
-    assertThat(created.getCustomerId(), is(customerId));
+    assertThat(created.customerId(), is(customerId));
+    assertTrue(created.transactions().isEmpty());
   }
 
   @Test
   void createAccountShouldCreateAccountAndInitialTransaction() {
     final UUID customerId = UUID.randomUUID();
     final UUID accountId = UUID.randomUUID();
+    final Transaction transaction = new Transaction(UUID.randomUUID(), null, null, 10L);
 
     when(customerExistsValidator.validate(customerId)).thenReturn(new ValidationResponse(true, ""));
     when(accountRepository.save(any()))
@@ -109,12 +108,14 @@ class AccountServiceTest {
               return account;
             });
     when(transactionProxyService.createTransactionForAccount(accountId, 10L))
-        .thenReturn(new Transaction(null, null, null, 10L));
+        .thenReturn(transaction);
 
-    final Account created = accountService.createAccount(customerId, 10L);
+    final AccountDto created = validatedAccountService.createAccount(customerId, 10L);
 
     assertNotNull(created);
-    assertThat(created.getCustomerId(), is(customerId));
+    assertThat(created.customerId(), is(customerId));
+    assertThat(created.transactions().size(), is(1));
+    assertThat(created.transactions().getFirst().id(), is(transaction.id()));
   }
 
   @Test
@@ -128,45 +129,10 @@ class AccountServiceTest {
     when(transactionProxyService.createTransactionForAccount(any(), anyLong())).thenReturn(null);
     when(accountRepository.findById(any())).thenReturn(Optional.of(account));
 
-    final Exception exception =
-        assertThrows(
-            IllegalStateException.class, () -> accountService.createAccount(customerId, 10L));
+    final AccountDto result = validatedAccountService.createAccount(customerId, 10L);
 
-    assertThat(
-        exception.getMessage(),
-        is("Failed to create account: failed to create initial transaction"));
+    assertNull(result);
     verify(accountRepository).delete(any());
-  }
-
-  @Test
-  void deleteAccountShouldDeleteAndReturnDeletedAccountIfItExists() {
-    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-
-    final Optional<Account> result = accountService.deleteAccount(account.getId());
-
-    assertTrue(result.isPresent());
-    assertThat(result.get(), is(account));
-    verify(accountRepository).delete(account);
-  }
-
-  @Test
-  void deleteAccountShouldReturnAndDeleteNothingIfNoAccountExists() {
-    when(accountRepository.findById(account.getId())).thenReturn(Optional.empty());
-
-    final Optional<Account> result = accountService.deleteAccount(account.getId());
-
-    assertTrue(result.isEmpty());
-    verify(accountRepository, never()).delete(any());
-  }
-
-  @Test
-  void getAccountShouldReturnTheCorrectAccount() {
-    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-
-    final Optional<Account> result = accountService.getAccount(account.getId());
-
-    assertTrue(result.isPresent());
-    assertThat(result.get(), is(account));
   }
 
   @Test
@@ -177,7 +143,7 @@ class AccountServiceTest {
 
     when(accountRepository.findByCustomerId(customerId)).thenReturn(accountList);
 
-    final List<Account> result = accountService.getCustomerAccounts(customerId);
+    final List<Account> result = validatedAccountService.getCustomerAccounts(customerId);
 
     assertThat(result, is(accountList));
   }

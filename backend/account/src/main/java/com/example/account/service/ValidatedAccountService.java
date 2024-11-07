@@ -1,18 +1,24 @@
 package com.example.account.service;
 
+import com.example.account.dto.AccountDto;
+import com.example.account.dto.TransactionDto;
 import com.example.account.model.Account;
 import com.example.account.model.Transaction;
 import com.example.account.repository.AccountRepository;
 import com.example.account.validation.ValidationRunner;
 import com.example.account.validation.validator.CustomerExistsValidator;
 import com.example.account.validation.validator.LongValueValidator;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AccountService {
+public class ValidatedAccountService implements IAccountService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedAccountService.class);
 
   private final AccountRepository accountRepository;
 
@@ -22,7 +28,7 @@ public class AccountService {
 
   private final LongValueValidator initialValueValidator;
 
-  public AccountService(
+  public ValidatedAccountService(
       AccountRepository accountRepository,
       TransactionProxyService transactionProxyService,
       CustomerExistsValidator customerExistsValidator) {
@@ -32,13 +38,14 @@ public class AccountService {
     this.initialValueValidator = new LongValueValidator(0L, null);
   }
 
-  public Account createAccount(UUID customerId, Long initialValue) {
+  @Override
+  public AccountDto createAccount(UUID customerId, Long initialValue) {
     return ValidationRunner.from(customerExistsValidator, customerId)
         .and(initialValueValidator, initialValue)
         .ifValidOrThrow(() -> handleAccountCreation(customerId, initialValue));
   }
 
-  private Account handleAccountCreation(UUID customerId, long initialValue) {
+  private AccountDto handleAccountCreation(UUID customerId, long initialValue) {
     final Account newAccount = new Account();
     newAccount.setCustomerId(customerId);
     newAccount.setBalance(initialValue);
@@ -53,29 +60,36 @@ public class AccountService {
 
         // throw to rollback account creation
         if (transaction == null) {
-          throw new IllegalStateException(
-              "Failed to create account: failed to create initial transaction");
+          LOGGER.error("Failed to create account: failed to create transaction");
+          rollbackAccountCreation(createdAccount);
+          return null;
         }
+
+        LOGGER.info(
+            "Created account with id {} and transaction with id {}",
+            createdAccount.getId(),
+            transaction.id());
+        // Both account and transaction creation succeeded, so return the assembled dto
+        return AccountDto.fromAccount(
+            createdAccount, Collections.singletonList(TransactionDto.fromTransaction(transaction)));
       } catch (Exception e) {
-        // rollback account creation then rethrow the error
-        deleteAccount(createdAccount.getId());
+        // rollback account creation then rethrow the error for end use consumption
+        rollbackAccountCreation(createdAccount);
         throw e;
       }
+    } else {
+      // No transactions created, so don't need to include them on the dto
+      LOGGER.info("Created account with id {} and no initial balance", createdAccount.getId());
+      return AccountDto.fromAccount(createdAccount, Collections.emptyList());
     }
-
-    return createdAccount;
   }
 
-  public Optional<Account> deleteAccount(UUID accountId) {
-    final Optional<Account> account = getAccount(accountId);
-    account.ifPresent(accountRepository::delete);
-    return account;
+  private void rollbackAccountCreation(Account account) {
+    accountRepository.findById(account.getId()).ifPresent(accountRepository::delete);
+    LOGGER.info("Creation of account {} failed, account creation rolled back", account.getId());
   }
 
-  public Optional<Account> getAccount(UUID accountId) {
-    return accountRepository.findById(accountId);
-  }
-
+  @Override
   public List<Account> getCustomerAccounts(UUID customerId) {
     return accountRepository.findByCustomerId(customerId);
   }
