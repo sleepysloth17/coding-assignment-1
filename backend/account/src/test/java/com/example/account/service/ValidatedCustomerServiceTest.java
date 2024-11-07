@@ -12,6 +12,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.account.dto.CustomerDto;
 import com.example.account.model.Customer;
 import com.example.account.repository.CustomerRepository;
 import com.example.account.validation.ValidationException;
@@ -26,9 +27,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class CustomerServiceTest {
+class ValidatedCustomerServiceTest {
 
-  @InjectMocks private CustomerService customerService;
+  @InjectMocks private ValidatedCustomerService validatedCustomerService;
 
   @Mock private CustomerRepository customerRepository;
 
@@ -44,10 +45,12 @@ class CustomerServiceTest {
     assertAll(
         () ->
             assertThrows(
-                ValidationException.class, () -> customerService.createCustomer("", "surname")),
+                ValidationException.class,
+                () -> validatedCustomerService.createCustomer("", "surname")),
         () ->
             assertThrows(
-                ValidationException.class, () -> customerService.createCustomer(null, "surname")));
+                ValidationException.class,
+                () -> validatedCustomerService.createCustomer(null, "surname")));
 
     verify(customerRepository, never()).save(any());
   }
@@ -57,10 +60,12 @@ class CustomerServiceTest {
     assertAll(
         () ->
             assertThrows(
-                ValidationException.class, () -> customerService.createCustomer("name", "")),
+                ValidationException.class,
+                () -> validatedCustomerService.createCustomer("name", "")),
         () ->
             assertThrows(
-                ValidationException.class, () -> customerService.createCustomer("name", null)));
+                ValidationException.class,
+                () -> validatedCustomerService.createCustomer("name", null)));
     ;
 
     verify(customerRepository, never()).save(any());
@@ -70,39 +75,19 @@ class CustomerServiceTest {
   void createCustomerShouldCreateCustomersWithNonEmptyFirstAndSurnames() {
     when(customerRepository.save(any())).then(returnsFirstArg());
 
-    final Customer created = customerService.createCustomer("name", "surname");
+    final CustomerDto created = validatedCustomerService.createCustomer("name", "surname");
 
     assertNotNull(created);
-    assertThat(created.getName(), is("name"));
-    assertThat(created.getSurname(), is("surname"));
-  }
-
-  @Test
-  void deleteCustomerShouldDeleteAndReturnDeletedCustomerIfItExists() {
-    when(customerRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
-
-    final Optional<Customer> result = customerService.deleteCustomer(customer.getId());
-
-    assertTrue(result.isPresent());
-    assertThat(result.get(), is(customer));
-    verify(customerRepository).delete(customer);
-  }
-
-  @Test
-  void deleteCustomerShouldReturnAndDeleteNothingIfNoCustomerExists() {
-    when(customerRepository.findById(customer.getId())).thenReturn(Optional.empty());
-
-    final Optional<Customer> result = customerService.deleteCustomer(customer.getId());
-
-    assertTrue(result.isEmpty());
-    verify(customerRepository, never()).delete(any());
+    assertThat(created.name(), is("name"));
+    assertThat(created.surname(), is("surname"));
+    assertTrue(created.accounts().isEmpty());
   }
 
   @Test
   void getCustomerShouldReturnTheCorrectCustomer() {
     when(customerRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
 
-    final Optional<Customer> result = customerService.getCustomer(customer.getId());
+    final Optional<Customer> result = validatedCustomerService.getCustomer(customer.getId());
 
     assertTrue(result.isPresent());
     assertThat(result.get(), is(customer));
@@ -115,7 +100,7 @@ class CustomerServiceTest {
 
     when(customerRepository.findAll()).thenReturn(customerList);
 
-    final List<Customer> result = customerService.getCustomers();
+    final List<Customer> result = validatedCustomerService.getCustomers();
 
     assertThat(result, is(customerList));
   }

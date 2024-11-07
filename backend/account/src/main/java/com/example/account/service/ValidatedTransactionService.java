@@ -1,5 +1,6 @@
 package com.example.account.service;
 
+import com.example.account.dto.TransactionDto;
 import com.example.account.model.Transaction;
 import com.example.account.repository.AccountRepository;
 import com.example.account.validation.ValidationRunner;
@@ -7,10 +8,14 @@ import com.example.account.validation.validator.AccountExistsValidator;
 import com.example.account.validation.validator.TransactionTotalValidator;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TransactionService {
+public class ValidatedTransactionService implements ITransactionService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedTransactionService.class);
 
   private final TransactionProxyService transactionProxyService;
 
@@ -20,7 +25,7 @@ public class TransactionService {
 
   private final TransactionTotalValidator transactionTotalValidator;
 
-  public TransactionService(
+  public ValidatedTransactionService(
       TransactionProxyService transactionProxyService,
       AccountRepository accountRepository,
       AccountExistsValidator accountExistsValidator,
@@ -31,24 +36,37 @@ public class TransactionService {
     this.transactionTotalValidator = transactionTotalValidator;
   }
 
-  public Transaction createTransactionForAccount(UUID accountId, long amount) {
+  @Override
+  public TransactionDto createTransaction(UUID accountId, long amount) {
     return ValidationRunner.from(accountExistsValidator, accountId)
         .and(transactionTotalValidator, amount, accountId)
-        .ifValidOrThrow(
-            () -> {
-              accountRepository
-                  .findById(accountId)
-                  .ifPresent(
-                      account -> {
-                        account.setBalance(account.getBalance() + amount);
-                        accountRepository.save(account);
-                      });
-
-              return transactionProxyService.createTransactionForAccount(accountId, amount);
-            });
+        .ifValidOrThrow(() -> this.handleTransactionCreation(accountId, amount));
   }
 
-  public List<Transaction> getAccountTransactions(UUID accountId) {
+  private TransactionDto handleTransactionCreation(UUID accountId, long amount) {
+    final Transaction transaction =
+        transactionProxyService.createTransactionForAccount(accountId, amount);
+
+    // If we failed to create the transaction, return null
+    if (transaction == null) {
+      return null;
+    }
+
+    accountRepository
+        .findById(accountId)
+        .ifPresent(
+            account -> {
+              account.setBalance(account.getBalance() + amount);
+              accountRepository.save(account);
+            });
+
+    LOGGER.info("Created transaction of id {} for account of id {}", transaction.id(), accountId);
+
+    return TransactionDto.fromTransaction(transaction);
+  }
+
+  @Override
+  public List<Transaction> getTransactions(UUID accountId) {
     return transactionProxyService.getAccountTransactions(accountId);
   }
 }

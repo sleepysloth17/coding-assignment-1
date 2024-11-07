@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,10 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.account.model.Account;
 import com.example.account.model.Customer;
 import com.example.account.model.Transaction;
-import com.example.account.service.AccountService;
-import com.example.account.service.CustomerService;
+import com.example.account.repository.AccountRepository;
+import com.example.account.repository.CustomerRepository;
 import com.example.account.service.TransactionProxyService;
 import com.jayway.jsonpath.JsonPath;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -37,9 +36,9 @@ import org.springframework.test.web.servlet.MvcResult;
 @AutoConfigureMockMvc
 class AccountControllerIntegrationTest {
 
-  @Autowired private CustomerService customerService;
+  @Autowired private CustomerRepository customerRepository;
 
-  @Autowired private AccountService accountService;
+  @Autowired private AccountRepository accountRepository;
 
   @MockBean private TransactionProxyService transactionProxyService;
 
@@ -60,7 +59,7 @@ class AccountControllerIntegrationTest {
 
   @Test
   void createCustomerAccountShouldReturn422IfInitialValueInvalid() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = createCustomer();
 
     mockMvc
         .perform(post("/customers/" + customer.getId() + "/accounts").param("initialValue", "-15"))
@@ -73,7 +72,7 @@ class AccountControllerIntegrationTest {
 
   @Test
   void createCustomerAccountShouldReturnCreatedAccountWithDefaultInitialValue() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = createCustomer();
 
     final MvcResult result =
         mockMvc
@@ -86,7 +85,7 @@ class AccountControllerIntegrationTest {
     final String createdAccountId =
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
-    final Optional<Account> account = accountService.getAccount(UUID.fromString(createdAccountId));
+    final Optional<Account> account = accountRepository.findById(UUID.fromString(createdAccountId));
     assertTrue(account.isPresent());
     assertThat(account.get().getCustomerId(), is(customer.getId()));
     assertThat(account.get().getBalance(), is(0L));
@@ -94,10 +93,11 @@ class AccountControllerIntegrationTest {
 
   @Test
   void createCustomerAccountShouldReturnCreatedAccountForValidInput() throws Exception {
+    final UUID transactionId = UUID.randomUUID();
     when(transactionProxyService.createTransactionForAccount(any(), eq(15L)))
-        .thenReturn(new Transaction(null, null, null, 15L));
+        .thenReturn(new Transaction(transactionId, null, null, 15L));
 
-    final Customer customer = customerService.createCustomer("name", "surname");
+    final Customer customer = createCustomer();
 
     final MvcResult result =
         mockMvc
@@ -107,77 +107,36 @@ class AccountControllerIntegrationTest {
             .andExpect(jsonPath("$.id").isNotEmpty())
             .andExpect(jsonPath("$.customerId").value(customer.getId().toString()))
             .andExpect(jsonPath("$.balance").value("15"))
+            .andExpect(jsonPath("$.transactions[0].id").value(transactionId.toString()))
+            .andExpect(jsonPath("$.transactions[0].amount").value("15"))
             .andReturn();
     final String createdAccountId =
         JsonPath.parse(result.getResponse().getContentAsString()).read("$.id");
 
-    final Optional<Account> account = accountService.getAccount(UUID.fromString(createdAccountId));
+    final Optional<Account> account = accountRepository.findById(UUID.fromString(createdAccountId));
     assertTrue(account.isPresent());
     assertThat(account.get().getCustomerId(), is(customer.getId()));
     assertThat(account.get().getBalance(), is(15L));
   }
 
   @Test
-  void getCustomerAccountsShouldReturn404IfCustomerDoesNotExist() throws Exception {
+  void createCustomerAccountShouldNotCreateAccountIfTransactionCreationFails() throws Exception {
+    when(transactionProxyService.createTransactionForAccount(any(), eq(15L))).thenReturn(null);
+
+    final Customer customer = createCustomer();
+
     mockMvc
-        .perform(get("/customers/" + UUID.randomUUID() + "/accounts"))
-        .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
+        .perform(post("/customers/" + customer.getId() + "/accounts").param("initialValue", "15"))
+        .andExpect(status().is(HttpStatus.OK.value()));
+
+    final List<Account> accounts = accountRepository.findByCustomerId(customer.getId());
+    assertTrue(accounts.isEmpty());
   }
 
-  @Test
-  void getCustomerAccountsShouldReturnAccountsIfCustomerExists() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 0L);
-
-    mockMvc
-        .perform(get("/customers/" + customer.getId() + "/accounts"))
-        .andExpect(status().is(HttpStatus.OK.value()))
-        .andExpect(jsonPath("$[0]").isNotEmpty())
-        .andExpect(jsonPath("$[0].id").value(account.getId().toString()))
-        .andExpect(jsonPath("$[0].customerId").value(customer.getId().toString()))
-        .andExpect(jsonPath("$[0].balance").value("0"));
-  }
-
-  @Test
-  void deleteAccountShouldReturn404IfAccountDoesNotExist() throws Exception {
-    mockMvc
-        .perform(delete("/accounts/" + UUID.randomUUID()))
-        .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
-  }
-
-  @Test
-  void deleteAccountShouldDeleteAndReturnExistingAccount() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 0L);
-
-    mockMvc
-        .perform(delete("/accounts/" + account.getId()))
-        .andExpect(status().is(HttpStatus.OK.value()))
-        .andExpect(jsonPath("$.id").value(account.getId().toString()))
-        .andExpect(jsonPath("$.customerId").value(customer.getId().toString()))
-        .andExpect(jsonPath("$.balance").value("0"));
-
-    final Optional<Account> optional = accountService.getAccount(account.getId());
-    assertTrue(optional.isEmpty());
-  }
-
-  @Test
-  void getAccountShouldReturn404IfAccountDoesNotExist() throws Exception {
-    mockMvc
-        .perform(get("/accounts/" + UUID.randomUUID()))
-        .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
-  }
-
-  @Test
-  void getAccountShouldReturnAccountIfItExistsExist() throws Exception {
-    final Customer customer = customerService.createCustomer("name", "surname");
-    final Account account = accountService.createAccount(customer.getId(), 0L);
-
-    mockMvc
-        .perform(get("/accounts/" + account.getId()))
-        .andExpect(status().is(HttpStatus.OK.value()))
-        .andExpect(jsonPath("$.id").value(account.getId().toString()))
-        .andExpect(jsonPath("$.customerId").value(customer.getId().toString()))
-        .andExpect(jsonPath("$.balance").value("0"));
+  private Customer createCustomer() {
+    final Customer customer = new Customer();
+    customer.setName("name");
+    customer.setSurname("surname");
+    return customerRepository.save(customer);
   }
 }

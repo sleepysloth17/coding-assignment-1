@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -7,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { take } from 'rxjs';
+import { Customer } from '../../home/customer';
 import { Account } from '../account';
 import { AccountService } from '../account.service';
 
@@ -23,9 +24,7 @@ export class AccountCreatorComponent {
     ['min']: 'Initial value must have a minimum value of 0',
   };
 
-  @Input() customerId: string | null = null;
-
-  @Output() accountCreated: EventEmitter<Account> = new EventEmitter<Account>();
+  @Input() customer: Customer | null = null;
 
   public formControl: FormControl<number | null>;
 
@@ -55,18 +54,18 @@ export class AccountCreatorComponent {
 
   public submit(): void {
     if (
-      this.customerId &&
+      this.customer &&
       this.formControl.valid &&
       this.formControl.value !== null
     ) {
       this._accountService
-        .createAccount(this.customerId, this.formControl.value)
+        .createAccount(this.customer.id, this.formControl.value)
         .pipe(take(1))
         .subscribe((createdAccount: Account | null) => {
           if (createdAccount) {
-            this.accountCreated.emit(createdAccount);
+            this.customer?.accounts.push(createdAccount);
+            this.formControl.reset(0);
           }
-          this.formControl.reset(0);
         });
     }
   }

@@ -30,18 +30,4 @@ export class TransactionService {
         }),
       );
   }
-
-  public getTransactionsForAccount(
-    accountId: string,
-  ): Observable<Transaction[]> {
-    return this._http
-      .get<any[]>(`${TransactionService.BASE_URL}/${accountId}/transactions`)
-      .pipe(
-        map((json: any[]) => json.map(Transaction.deserialise)),
-        catchError((err: any) => {
-          console.error('Error fetching transactions: ', err);
-          return of([]);
-        }),
-      );
-  }
 }

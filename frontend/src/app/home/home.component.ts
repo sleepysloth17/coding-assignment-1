@@ -16,7 +16,7 @@ import { CustomerService } from './customer.service';
 export class HomeComponent implements OnInit {
   public customers: Customer[] = [];
 
-  public selectedCustomerId: string | null = null;
+  public selectedCustomer: Customer | null = null;
 
   constructor(private _customerService: CustomerService) {}
 
@@ -32,6 +32,6 @@ export class HomeComponent implements OnInit {
   }
 
   public onCustomerSelection(customer: Customer): void {
-    this.selectedCustomerId = customer?.id;
+    this.selectedCustomer = customer;
   }
 }

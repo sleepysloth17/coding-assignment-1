@@ -30,16 +30,4 @@ export class AccountService {
         }),
       );
   }
-
-  public getAccounts(customerId: string): Observable<Account[]> {
-    return this._http
-      .get<any[]>(`${AccountService.BASE_URL}/customers/${customerId}/accounts`)
-      .pipe(
-        map((json: any[]) => json.map(Account.deserialise)),
-        catchError((err: any) => {
-          console.error('Error fetching accounts: ', err);
-          return of([]);
-        }),
-      );
-  }
 }

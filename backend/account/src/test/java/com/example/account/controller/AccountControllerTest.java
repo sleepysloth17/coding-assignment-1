@@ -4,12 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import com.example.account.model.Account;
-import com.example.account.model.Customer;
-import com.example.account.service.AccountService;
-import com.example.account.service.CustomerService;
-import java.util.List;
-import java.util.Optional;
+import com.example.account.dto.AccountDto;
+import com.example.account.service.IAccountService;
+import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +22,7 @@ class AccountControllerTest {
 
   @InjectMocks private AccountController accountController;
 
-  @Mock private AccountService accountService;
-
-  @Mock private CustomerService customerService;
+  @Mock private IAccountService accountService;
 
   private UUID customerId;
 
@@ -39,76 +34,15 @@ class AccountControllerTest {
   @Test
   void createCustomerAccountShouldReturnCreatedAccount() {
     final Long initialValue = 1234L;
-    final Account account = getAccount(UUID.randomUUID());
+    final AccountDto account =
+        new AccountDto(UUID.randomUUID(), UUID.randomUUID(), 0L, Collections.emptyList());
 
     when(accountService.createAccount(customerId, initialValue)).thenReturn(account);
 
-    final ResponseEntity<Account> response =
+    final ResponseEntity<AccountDto> response =
         accountController.createCustomerAccount(customerId, initialValue);
 
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
     assertThat(response.getBody(), is(account));
-  }
-
-  @Test
-  void getCustomerAccountsShouldReturnListOfCustomerAccountsIfCustomerExists() {
-    final List<Account> accountList =
-        List.of(
-            getAccount(UUID.randomUUID()),
-            getAccount(UUID.randomUUID()),
-            getAccount(UUID.randomUUID()));
-    final Customer customer = new Customer();
-    customer.setId(customerId);
-
-    when(customerService.getCustomer(customerId)).thenReturn(Optional.of(customer));
-    when(accountService.getCustomerAccounts(customerId)).thenReturn(accountList);
-
-    final ResponseEntity<List<Account>> response =
-        accountController.getCustomerAccounts(customerId);
-
-    assertThat(response.getStatusCode(), is(HttpStatus.OK));
-    assertThat(response.getBody(), is(accountList));
-  }
-
-  @Test
-  void getCustomerAccountsShouldReturn404IfCustomerDoesNotExist() {
-    when(customerService.getCustomer(customerId)).thenReturn(Optional.empty());
-
-    final ResponseEntity<List<Account>> response =
-        accountController.getCustomerAccounts(customerId);
-
-    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-  }
-
-  @Test
-  void getAccountWithIdShouldReturnTheAccountIfOneExists() {
-    final UUID accountId = UUID.randomUUID();
-    final Account account = getAccount(accountId);
-
-    when(accountService.getAccount(accountId)).thenReturn(Optional.of(account));
-
-    final ResponseEntity<Account> response = accountController.getAccountWithId(accountId);
-
-    assertThat(response.getStatusCode(), is(HttpStatus.OK));
-    assertThat(response.getBody(), is(account));
-  }
-
-  @Test
-  void getAccountWithIdShouldReturn404IfAccountDoesNotExist() {
-    final UUID accountId = UUID.randomUUID();
-
-    when(accountService.getAccount(accountId)).thenReturn(Optional.empty());
-
-    final ResponseEntity<Account> response = accountController.getAccountWithId(accountId);
-
-    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-  }
-
-  private Account getAccount(UUID accountId) {
-    final Account account = new Account();
-    account.setId(accountId);
-    account.setCustomerId(customerId);
-    account.setBalance(0L);
-    return account;
   }
 }

@@ -72,7 +72,7 @@ docker compose up
 
 This will build and serve the services on the above ports, but note that by default only the ui and account services are accessibly from the host machine, I have no forwarded the transaction service ports (and in face the acount service ports do not need to be forwarded: I have forwarded them for convenience).
 
-Note that the pipelines build and push docker images to the package registry in the repo if you want to pull those.
+Note that the images have been build with defualt configuration and pushed to the repo registry.
 
 ## Tests
 
@@ -102,8 +102,8 @@ The tests are included in the pipeline.
 I have made a couple of assumptions:
 
 - The UI is used by one user at a time: hence the lack of websockets (e.g for customer creation)
+- Since I introduced the DTOs, I've removed the delete endpoints, as they were not used and are not mentioned in the spec.
 - I've kept transactions simple: they are immediate deposits or withdrawals from a single account, rather than transfering between accounts or performing some form of validation on source/destination. I see no reason the model could not be extended
-- I've (naively) kept the transaction service as a simple REST server without validation (this is done in the account service and on the frontend): this has been done with the assumption that transaction creation will be handled via the bigger service (the (very) basic auth setup is to illustrate this). If we wanted to be able to hit the transaction service directly, then the balance on the account would have to be a) updated when the transaction is created (say, by firing over an event) and b) I would treat it as more of a cache than a saved property. We wouldn't want the balance and transactions to get out of sync.
-- I've created more than just the user information endpoint: this is to avoid having to pull out the entirety of the user information everytime we select a use, and instead go for a layer at a time
+- I've (naively) kept the transaction service as a simple REST server without validation (this is done in the account service and on the frontend): this has been done with the assumption that transaction creation will be handled via the bigger service (the (very) basic auth setup is to illustrate this). If we wanted to be able to hit the transaction service directly, then the balance on the account would have to be updated when the transaction is created (say, by firing over an event) and b) I would treat it as more of a cache than a saved property (recalculate on transation fetch, have a scheduled recalculation etc). We wouldn't want the balance and transactions to get out of sync. FOr convenience, I have currnetly left the balance saved as is as we can keep it in sync.
 - As mentioned in the brief, I have used an in memory db (seperate db for both the transaction and account service) and kept a _very_ light touch on the schema design. It would instead be neater to have e.g a Postgres extenal db with foreign key constraints (e.g customerId on account referencing account table) and migration scripts, to keep it more tightly managed.
 - For id, I've used UUIDs as I didn't spot if another format was specified: this does make the account list more verbose than say, numbers!
